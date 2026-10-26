@@ -46,6 +46,20 @@ export function load(table: TableName, force = false) {
   return loading;
 }
 
+/** Deletes rows and drops them from the shared cache, so every page sees the change at once. */
+export async function removeRows(table: TableName, ids: string[]) {
+  if (ids.length === 0) return;
+  const gone = new Set(ids);
+  const before = entry(table).rows ?? [];
+  set(table, { rows: before.filter((r) => !gone.has((r as { id: string }).id)) });
+  try {
+    await db.removeMany(table, ids);
+  } catch (e) {
+    set(table, { rows: before, error: message(e) });
+    throw e;
+  }
+}
+
 /** Drops every cached table, e.g. after logging out or importing a backup. */
 export function resetCache() {
   cache.clear();

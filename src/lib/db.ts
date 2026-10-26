@@ -8,6 +8,7 @@ interface Store {
   insert<T extends TableName>(table: T, row: Row<T>): Promise<Row<T>>;
   update<T extends TableName>(table: T, id: string, patch: Partial<Row<T>>): Promise<Row<T>>;
   remove(table: TableName, id: string): Promise<void>;
+  removeMany(table: TableName, ids: string[]): Promise<void>;
 }
 
 const supabaseStore: Store = {
@@ -29,6 +30,13 @@ const supabaseStore: Store = {
   async remove(table, id) {
     const { error } = await supabase().from(table).delete().eq("id", id);
     if (error) throw error;
+  },
+  async removeMany(table, ids) {
+    // Keep each request's URL short; .in() puts every id into the query string.
+    for (let i = 0; i < ids.length; i += 100) {
+      const { error } = await supabase().from(table).delete().in("id", ids.slice(i, i + 100));
+      if (error) throw error;
+    }
   },
 };
 
@@ -67,6 +75,13 @@ const localStore: Store = {
     writeLocal(
       table,
       readLocal<{ id: string }>(table).filter((r) => r.id !== id),
+    );
+  },
+  async removeMany(table, ids) {
+    const gone = new Set(ids);
+    writeLocal(
+      table,
+      readLocal<{ id: string }>(table).filter((r) => !gone.has(r.id)),
     );
   },
 };
