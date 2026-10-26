@@ -16,7 +16,7 @@ Persönliche Studien-Webseite für das Medizinstudium an der MHH: Termine mit Co
   - Fragen anlegen, bearbeiten, pausieren, zurücksetzen, löschen; Text-Import für viele Fragen auf einmal.
   - Statistik: Wiederholungen der letzten 30 Tage, Trefferquote pro Fach, schwächste Themen, Vorschau der fälligen Fragen.
 - **KI-Fragen:** PDF/Folien (Seitenbereich wählbar), eingefügter Text oder ein Link → Claude schlägt Multiple-Choice- und Erklär-Fragen mit Erklärung vor; jede Frage wird vor dem Übernehmen geprüft und kann bearbeitet werden.
-- **Abbildungen:** Anatomie-Bilder hochladen, Beschriftungen und Strukturen mit Rechtecken abdecken und in drei Ebenen (grob, mittel, fein) einteilen. Jede Markierung wird eine eigene Frage mit Wiederholung; feinere Strukturen einer Abbildung kommen erst, wenn die gröberen gelernt sind. Antwort eintippen (Tippfehler werden toleriert) oder nur aufdecken.
+- **Abbildungen:** Anatomie-Bilder hochladen, Beschriftungen und Strukturen mit Rechtecken abdecken und in drei Ebenen (grob, mittel, fein) einteilen. Jede Markierung wird eine eigene Frage mit Wiederholung; feinere Strukturen einer Abbildung kommen erst, wenn die gröberen gelernt sind. Antwort eintippen (Tippfehler werden toleriert) oder nur aufdecken. Gedruckte Beschriftungen kann die Seite mit „Beschriftungen erkennen“ automatisch finden und abdecken (Texterkennung mit Tesseract direkt im Browser, kostenlos, Dateien liegen unter `public/tesseract`).
 - **Datensicherung:** Export/Import aller Daten als JSON (Bilder der Abbildungen bleiben im Supabase-Speicher und sind nicht in der Datei).
 
 ## Lokal starten

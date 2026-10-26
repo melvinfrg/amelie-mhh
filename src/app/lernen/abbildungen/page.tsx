@@ -6,7 +6,8 @@ import { Suspense, useState, type FormEvent } from "react";
 import { FigureEditor, FigureQuestion } from "@/components/Figure";
 import { TopicSelect } from "@/components/TopicSelect";
 import { Button, Card, Empty, ErrorNote, Field, PageHeader, TextInput } from "@/components/ui";
-import { LEVELS, removeImage, syncQuestions, uploadImage } from "@/lib/figures";
+import { imageUrl, LEVELS, removeImage, syncQuestions, uploadImage } from "@/lib/figures";
+import { detectLabels } from "@/lib/ocr";
 import { isMastered, isNew, topicPath } from "@/lib/learning";
 import { useTable } from "@/lib/useTable";
 import type { Figure, Mask } from "@/lib/types";
@@ -154,6 +155,7 @@ function Editor({ id }: { id: string }) {
   const [drawLevel, setDrawLevel] = useState(1);
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<string | null>(null);
+  const [ocr, setOcr] = useState<{ progress: number } | { message: string } | null>(null);
 
   // Start editing from the stored figure once it has loaded.
   if (figure && draft?.id !== figure.id) setDraft(figure);
@@ -195,6 +197,23 @@ function Editor({ id }: { id: string }) {
     }
   }
 
+  async function detect() {
+    setOcr({ progress: 0 });
+    try {
+      const src = await imageUrl(draft!.image);
+      const found = await detectLabels(src, draft!.masks, drawLevel, (progress) => setOcr({ progress }));
+      setDraft((d) => d && { ...d, masks: [...d.masks, ...found] });
+      setOcr({
+        message:
+          found.length === 0
+            ? "Keine (neuen) Beschriftungen erkannt. Markiere sie von Hand."
+            : `${found.length} Beschriftungen erkannt. Bitte Namen und Ebenen prüfen, Unpassendes löschen und dann speichern.`,
+      });
+    } catch (e) {
+      setOcr({ message: `Erkennung fehlgeschlagen: ${e instanceof Error ? e.message : String(e)}` });
+    }
+  }
+
   async function removeFigure() {
     if (!confirm(`„${figure!.title}“ mit allen ${figure!.masks.length} Fragen löschen?`)) return;
     for (const q of questions.rows.filter((q) => q.figure_id === id)) await questions.remove(q.id);
@@ -232,7 +251,13 @@ function Editor({ id }: { id: string }) {
                 {l.value} · {l.label}
               </Button>
             ))}
+            <Button variant="secondary" className="sm:ml-auto" onClick={detect} disabled={ocr !== null && "progress" in ocr}>
+              {ocr && "progress" in ocr ? `Erkenne Text … ${Math.round(ocr.progress * 100)}%` : "🔍 Beschriftungen erkennen"}
+            </Button>
           </div>
+          {ocr && "message" in ocr && (
+            <p className="mb-3 rounded-lg bg-sky-50 px-3 py-2 text-sm text-sky-900 dark:bg-sky-950 dark:text-sky-200">{ocr.message}</p>
+          )}
           <FigureEditor
             image={draft.image}
             masks={draft.masks}
@@ -273,7 +298,7 @@ function Editor({ id }: { id: string }) {
             </Card>
           ) : (
             <Card className="text-sm text-slate-500">
-              Ziehe auf dem Bild ein Rechteck, um eine Struktur zu markieren. Grobe Strukturen (Ebene 1) werden zuerst abgefragt, feinere erst, wenn
+              Ziehe auf dem Bild ein Rechteck, um eine Struktur zu markieren, oder lass gedruckte Beschriftungen mit „Beschriftungen erkennen“ automatisch finden. Grobe Strukturen (Ebene 1) werden zuerst abgefragt, feinere erst, wenn
               die gröberen dieser Abbildung gelernt sind.
             </Card>
           )}
