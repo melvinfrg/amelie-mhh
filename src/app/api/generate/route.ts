@@ -1,21 +1,18 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { createClient } from "@supabase/supabase-js";
-import { GenerationSchema, type GenerateRequest } from "@/lib/generate";
+import { GENERATION_INTRO, GENERATION_RULES, GenerationSchema, type GenerateRequest } from "@/lib/generate";
 
 export const maxDuration = 300;
 
-const SYSTEM = `Du erstellst Lernfragen für eine Medizinstudentin im ersten Semester (Vorklinik, Humanmedizin, MHH Hannover).
+const SYSTEM = `${GENERATION_INTRO}
 
 Regeln:
-- Fragen ausschließlich auf Grundlage des gelieferten Materials. Nichts erfinden, was dort nicht steht oder nicht direkt daraus folgt.
-- Deutsch, korrekte medizinische Fachsprache (lateinische Bezeichnungen wie im Material).
-- Von groß nach klein: zuerst Fragen zu Grundstrukturen und Überblick, danach zu Details.
+${GENERATION_RULES}
 - Multiple Choice ("mc"): 4-5 plausible Antwortoptionen im Stil von IMPP-Fragen, meist genau eine richtig. Falsche Optionen sollen typische Verwechslungen sein, keine offensichtlich absurden Antworten. Für "mc" bleibt "answer" leer.
 - Erklär-Aufgaben ("explain"): offene Frage, die Verständnis prüft (Zusammenhänge, Funktion, klinischer Bezug). "answer" enthält eine knappe Musterlösung in Stichpunkten. "options" bleibt leer.
 - "explanation": 2-4 Sätze, warum die Lösung stimmt und die anderen Optionen nicht. Merkhilfen sind willkommen.
-- "location": wo im Material die Information steht (z. B. "Folie 12" oder "Abschnitt Schultergelenk"), sonst leer.
-- Keine doppelten Fragen.`;
+- "location": wo im Material die Information steht (z. B. "Folie 12" oder "Abschnitt Schultergelenk"), sonst leer.`;
 
 function json(status: number, body: unknown) {
   return Response.json(body, { status });
@@ -49,6 +46,11 @@ async function pageText(url: string) {
     .replace(/\n\s*\n+/g, "\n\n")
     .trim()
     .slice(0, 300_000);
+}
+
+/** Lets the page know whether the paid, automatic route is set up. */
+export function GET() {
+  return json(200, { available: Boolean(process.env.ANTHROPIC_API_KEY) });
 }
 
 export async function POST(request: Request) {
