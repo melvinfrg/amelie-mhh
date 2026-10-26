@@ -12,6 +12,7 @@ const NAV = [
   { href: "/todos", label: "To-dos", icon: "✅" },
   { href: "/lernen", label: "Lernen", icon: "🧠" },
   { href: "/lernen/fragen", label: "Fragen", icon: "📝" },
+  { href: "/lernen/generieren", label: "KI-Fragen", icon: "✨" },
   { href: "/lernen/statistik", label: "Statistik", icon: "📊" },
   { href: "/links", label: "Links", icon: "🔗" },
   { href: "/einstellungen", label: "Einstellungen", icon: "⚙️" },
