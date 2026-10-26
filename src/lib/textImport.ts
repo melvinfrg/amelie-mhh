@@ -1,6 +1,8 @@
 import type { McOption, Question } from "./types";
 
-export type ParsedQuestion = Pick<Question, "type" | "prompt" | "options" | "answer" | "explanation" | "video_url" | "source">;
+export type ParsedQuestion = Pick<Question, "prompt" | "options" | "answer" | "explanation" | "video_url" | "source"> & {
+  type: "mc" | "explain";
+};
 
 export const IMPORT_EXAMPLE = `F: Welcher Nerv innerviert den M. deltoideus?
 - N. radialis

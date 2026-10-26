@@ -95,6 +95,17 @@ export function isUnlocked(
   return isUnlocked(topics, questions, settings, topic.parent_id);
 }
 
+/**
+ * Within a figure, finer masks wait until every coarser mask has left the learning steps,
+ * so a figure is learned from the big structures down to the details.
+ */
+export function levelOpen(questions: Question[], q: Question): boolean {
+  if (!q.figure_id || !q.level || q.level <= 1) return true;
+  return questions
+    .filter((o) => o.figure_id === q.figure_id && !o.suspended && (o.level ?? 1) < q.level!)
+    .every((o) => o.card && (o.card.state === State.Review || o.card.state === State.Relearning));
+}
+
 export function newStudiedToday(reviews: Review[], questions: Question[]) {
   const today = dayKey(new Date());
   const firstReview = new Map<ID, string>();
@@ -111,15 +122,16 @@ export interface QueueOptions {
   questions: Question[];
   reviews: Review[];
   settings: Settings | Omit<Settings, "id">;
-  /** Restrict to a subject or a topic (including its subtopics). */
+  /** Restrict to a subject, a topic (including its subtopics) or one figure. */
   subjectId?: ID | null;
   topicId?: ID | null;
+  figureId?: ID | null;
   now?: Date;
 }
 
 /** Due reviews first (oldest first), then new questions from coarse to fine topics. */
 export function buildQueue(opts: QueueOptions): Question[] {
-  const { topics, questions, reviews, settings, subjectId, topicId, now = new Date() } = opts;
+  const { topics, questions, reviews, settings, subjectId, topicId, figureId, now = new Date() } = opts;
   const allowedTopics = new Set(
     topicId
       ? descendants(topics, topicId)
@@ -129,6 +141,7 @@ export function buildQueue(opts: QueueOptions): Question[] {
     (q) =>
       !q.suspended &&
       allowedTopics.has(q.topic_id) &&
+      (!figureId || q.figure_id === figureId) &&
       isUnlocked(topics, questions, settings, q.topic_id),
   );
 
@@ -140,11 +153,12 @@ export function buildQueue(opts: QueueOptions): Question[] {
   const topicDepth = new Map(topics.map((t) => [t.id, depth(topics, t)]));
   const topicSort = new Map(topics.map((t) => [t.id, t.sort]));
   const fresh = candidates
-    .filter(isNew)
+    .filter((q) => isNew(q) && levelOpen(questions, q))
     .sort(
       (a, b) =>
         (topicDepth.get(a.topic_id) ?? 0) - (topicDepth.get(b.topic_id) ?? 0) ||
         (topicSort.get(a.topic_id) ?? 0) - (topicSort.get(b.topic_id) ?? 0) ||
+        (a.level ?? 0) - (b.level ?? 0) ||
         (a.created_at ?? "").localeCompare(b.created_at ?? ""),
     )
     .slice(0, remainingNew);

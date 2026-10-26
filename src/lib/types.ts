@@ -46,7 +46,7 @@ export interface Topic extends Base {
   sort: number;
 }
 
-export type QuestionType = "mc" | "explain";
+export type QuestionType = "mc" | "explain" | "occlusion";
 
 export interface McOption {
   text: string;
@@ -80,6 +80,32 @@ export interface Question extends Base {
   suspended: boolean;
   card: CardJson | null;
   due: string | null;
+  /** Only for type "occlusion": the figure and the mask this question asks about. */
+  figure_id?: ID | null;
+  mask_id?: string | null;
+  /** 1 = coarse … 3 = fine; finer masks of a figure open once the coarser ones are learned. */
+  level?: number | null;
+}
+
+/** A covered structure on a figure; coordinates are fractions of the image size. */
+export interface Mask {
+  id: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  label: string;
+  level: number;
+}
+
+export interface Figure extends Base {
+  topic_id: ID;
+  title: string;
+  /** Storage path in the "figures" bucket, or a data URL in demo mode. */
+  image: string;
+  masks: Mask[];
+  /** Cover every mask while asking, not just the one in question. */
+  hide_all: boolean;
 }
 
 export interface Review extends Base {
@@ -104,6 +130,7 @@ export interface Tables {
   links: LinkItem;
   subjects: Subject;
   topics: Topic;
+  figures: Figure;
   questions: Question;
   reviews: Review;
   settings: Settings;
@@ -114,6 +141,7 @@ export type TableName = keyof Tables;
 export const TABLES: TableName[] = [
   "subjects",
   "topics",
+  "figures",
   "questions",
   "reviews",
   "events",
