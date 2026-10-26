@@ -6,6 +6,7 @@ import { Suspense, useState, type FormEvent } from "react";
 import { QuestionImage } from "@/components/Media";
 import { TopicSelect } from "@/components/TopicSelect";
 import { Button, Card, Empty, ErrorNote, Field, PageHeader, Select, TextArea, TextInput } from "@/components/ui";
+import { deleteQuestions } from "@/lib/cascade";
 import { formatDate } from "@/lib/dates";
 import { descendants, isNew, topicPath } from "@/lib/learning";
 import { IMPORT_EXAMPLE, parseQuestions } from "@/lib/textImport";
@@ -45,7 +46,7 @@ function Fragen() {
   const params = useSearchParams();
   const topics = useTable("topics");
   const questions = useTable("questions");
-  const figures = useTable("figures");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [topicFilter, setTopicFilter] = useState(params.get("thema") ?? "");
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<{ id?: string; draft: Draft } | null>(null);
@@ -88,11 +89,20 @@ function Fragen() {
     setImporting(false);
   }
 
-  async function removeQuestion(q: Question) {
-    // An occlusion question would come back on the next save of its figure, so drop its mask too.
-    const figure = figures.rows.find((f) => f.id === q.figure_id);
-    if (figure) await figures.update(figure.id, { masks: figure.masks.filter((m) => m.id !== q.mask_id) });
-    await questions.remove(q.id);
+  async function removeSelected() {
+    const ids = visible.filter((q) => selected.has(q.id)).map((q) => q.id);
+    if (!confirm(`${ids.length} ${ids.length === 1 ? "Frage" : "Fragen"} mit Lernfortschritt endgültig löschen?`)) return;
+    await deleteQuestions(ids);
+    setSelected(new Set());
+  }
+
+  function toggle(id: string) {
+    setSelected((s) => {
+      const next = new Set(s);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   }
 
   function setDraft(patch: Partial<Draft>) {
@@ -218,11 +228,37 @@ function Fragen() {
         <TextInput value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Suchen …" className="max-w-xs" aria-label="Fragen durchsuchen" />
       </div>
 
+      {visible.length > 0 && (
+        <div className="mb-3 flex flex-wrap items-center gap-2 text-sm">
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={visible.every((q) => selected.has(q.id))}
+              onChange={(e) => setSelected(e.target.checked ? new Set(visible.map((q) => q.id)) : new Set())}
+              className="h-5 w-5 accent-teal-700"
+            />
+            Alle {visible.length} angezeigten auswählen
+          </label>
+          {visible.some((q) => selected.has(q.id)) && (
+            <Button variant="danger" onClick={removeSelected}>
+              {visible.filter((q) => selected.has(q.id)).length} ausgewählte löschen
+            </Button>
+          )}
+        </div>
+      )}
+
       <div className="space-y-2">
         {visible.length === 0 && questions.loaded && <Empty>Keine Fragen gefunden.</Empty>}
         {visible.map((q) => (
           <Card key={q.id} className={q.suspended ? "opacity-60" : ""}>
             <div className="flex flex-wrap items-start gap-3">
+              <input
+                type="checkbox"
+                checked={selected.has(q.id)}
+                onChange={() => toggle(q.id)}
+                className="mt-1 h-5 w-5 accent-teal-700"
+                aria-label="Frage auswählen"
+              />
               <div className="min-w-0 flex-1">
                 <p className="text-xs text-slate-500">
                   {topicPath(topics.rows, q.topic_id)} · {TYPE_LABEL[q.type]}
@@ -255,7 +291,7 @@ function Fragen() {
                 >
                   Zurücksetzen
                 </Button>
-                <Button variant="danger" onClick={() => confirm("Frage löschen?") && removeQuestion(q)}>
+                <Button variant="danger" onClick={() => confirm("Frage löschen?") && deleteQuestions([q.id])}>
                   Löschen
                 </Button>
               </div>

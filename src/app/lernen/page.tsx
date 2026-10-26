@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Button, Card, Empty, ErrorNote, PageHeader, ProgressBar, TextInput } from "@/components/ui";
 import { buildQueue, childrenOf, descendants, isNew, isUnlocked, mastery } from "@/lib/learning";
+import { contentOf, deleteTopics } from "@/lib/cascade";
 import { useSettings } from "@/lib/settings";
 import { DEFAULT_SUBJECTS, SubjectDot } from "@/lib/subjects";
 import { useTable } from "@/lib/useTable";
@@ -95,8 +96,11 @@ export default function LernenPage() {
                   settings={settings}
                   countsFor={countsFor}
                   onDeleteSubject={async () => {
-                    if (ids.size > 0) return alert("Bitte zuerst alle Themen dieses Fachs löschen.");
-                    if (confirm(`Fach „${subject.name}“ löschen?`)) await subjects.remove(subject.id);
+                    const topicIds = [...ids];
+                    const content = await contentOf(topicIds);
+                    const parts = [count(topicIds.length, "Thema", "Themen"), count(content.questions, "Frage", "Fragen"), count(content.figures, "Abbildung", "Abbildungen")];
+                    if (!confirm(`Fach „${subject.name}“ mit ${parts.join(", ")} und dem Lernfortschritt endgültig löschen?`)) return;
+                    await deleteTopics(topicIds, subject.id);
                   }}
                 />
               )}
@@ -121,6 +125,10 @@ export default function LernenPage() {
       </form>
     </>
   );
+}
+
+function count(n: number, one: string, many: string) {
+  return `${n} ${n === 1 ? one : many}`;
 }
 
 function TopicTree({
@@ -156,10 +164,14 @@ function TopicTree({
 
   async function remove(topic: Topic) {
     const ids = descendants(topics.rows, topic.id);
-    const affected = questions.filter((q) => ids.includes(q.topic_id)).length;
-    if (affected > 0) return alert(`Dieses Thema hat noch ${affected} Fragen. Verschiebe oder lösche sie zuerst.`);
-    if (!confirm(`Thema „${topic.name}“ mit allen Unterthemen löschen?`)) return;
-    for (const id of ids.reverse()) await topics.remove(id);
+    const content = await contentOf(ids);
+    const extra = [
+      ids.length > 1 ? count(ids.length - 1, "Unterthema", "Unterthemen") : "",
+      content.questions ? count(content.questions, "Frage", "Fragen") : "",
+      content.figures ? count(content.figures, "Abbildung", "Abbildungen") : "",
+    ].filter(Boolean);
+    if (!confirm(`Thema „${topic.name}“${extra.length ? ` mit ${extra.join(", ")}` : ""} endgültig löschen?`)) return;
+    await deleteTopics(ids);
   }
 
   function addForm(parent: string | null) {
