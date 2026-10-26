@@ -19,6 +19,9 @@ E: Sie zentriert den Humeruskopf in der Pfanne.`;
  */
 export function parseQuestions(text: string): ParsedQuestion[] {
   return text
+    // Answers pasted from a chat often come wrapped in a code block or with bold tags.
+    .replace(/^\s*```.*$/gm, "")
+    .replace(/\*\*([FAEVQ]:)\*\*/gi, "$1")
     .split(/\n\s*\n/)
     .map((block) => block.trim())
     .filter(Boolean)

@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
 
 export const input =
-  "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100";
+  "rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100";
 
 type Variant = "primary" | "secondary" | "ghost" | "danger";
 
@@ -57,16 +57,21 @@ export function Field({ label, children, className = "" }: { label: string; chil
   );
 }
 
+/** Inputs fill their container unless the caller passes its own width class. */
+function inputClass(extra = "") {
+  return `${input} ${/(^|\s)(w-|flex-1)/.test(extra) ? "" : "w-full"} ${extra}`;
+}
+
 export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
-  return <input {...props} className={`${input} ${props.className ?? ""}`} />;
+  return <input {...props} className={inputClass(props.className)} />;
 }
 
 export function TextArea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return <textarea rows={3} {...props} className={`${input} ${props.className ?? ""}`} />;
+  return <textarea rows={3} {...props} className={inputClass(props.className)} />;
 }
 
 export function Select(props: SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select {...props} className={`${input} ${props.className ?? ""}`} />;
+  return <select {...props} className={inputClass(props.className)} />;
 }
 
 export function Empty({ children }: { children: ReactNode }) {

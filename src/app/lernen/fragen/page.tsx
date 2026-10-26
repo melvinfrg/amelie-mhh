@@ -1,14 +1,16 @@
 "use client";
 
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState, type FormEvent } from "react";
 import { QuestionImage } from "@/components/Media";
+import { TopicSelect } from "@/components/TopicSelect";
 import { Button, Card, Empty, ErrorNote, Field, PageHeader, Select, TextArea, TextInput } from "@/components/ui";
 import { formatDate } from "@/lib/dates";
-import { depth, descendants, isNew, topicPath } from "@/lib/learning";
+import { descendants, isNew, topicPath } from "@/lib/learning";
 import { IMPORT_EXAMPLE, parseQuestions } from "@/lib/textImport";
 import { useTable } from "@/lib/useTable";
-import type { Question, QuestionType, Topic } from "@/lib/types";
+import type { Question, QuestionType } from "@/lib/types";
 
 export default function FragenPage() {
   return (
@@ -36,34 +38,6 @@ const emptyDraft = (topic_id: string): Draft => ({
   video_url: "",
   source: "",
 });
-
-function TopicSelect({ topics, value, onChange, allowAll }: { topics: Topic[]; value: string; onChange: (v: string) => void; allowAll?: boolean }) {
-  const subjects = useTable("subjects");
-  return (
-    <Select value={value} onChange={(e) => onChange(e.target.value)} required={!allowAll}>
-      <option value="">{allowAll ? "Alle Themen" : "Thema wählen …"}</option>
-      {[...subjects.rows]
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .map((s) => (
-          <optgroup key={s.id} label={s.name}>
-            {flatten(topics, s.id).map((t) => (
-              <option key={t.id} value={t.id}>
-                {"  ".repeat(depth(topics, t))}
-                {t.name}
-              </option>
-            ))}
-          </optgroup>
-        ))}
-    </Select>
-  );
-}
-
-function flatten(topics: Topic[], subjectId: string, parent: string | null = null): Topic[] {
-  return topics
-    .filter((t) => t.subject_id === subjectId && t.parent_id === parent)
-    .sort((a, b) => a.sort - b.sort || a.name.localeCompare(b.name))
-    .flatMap((t) => [t, ...flatten(topics, subjectId, t.id)]);
-}
 
 function Fragen() {
   const params = useSearchParams();
@@ -122,6 +96,9 @@ function Fragen() {
         subtitle={`${questions.rows.length} Fragen insgesamt`}
         action={
           <div className="flex gap-2">
+            <Link href="/lernen/generieren">
+              <Button variant="secondary">✨ Mit KI generieren</Button>
+            </Link>
             <Button variant="secondary" onClick={() => setImporting(!importing)}>
               Text-Import
             </Button>
