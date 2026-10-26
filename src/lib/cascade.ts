@@ -2,7 +2,7 @@
 
 import { db } from "./db";
 import { removeImage } from "./figures";
-import type { ID } from "./types";
+import type { ID, Question } from "./types";
 import { load, removeRows } from "./useTable";
 
 /**
@@ -26,6 +26,15 @@ export async function deleteQuestions(ids: ID[]) {
   await removeRows("reviews", reviews.filter((r) => gone.has(r.question_id)).map((r) => r.id));
   await removeRows("questions", ids);
   if (masksGone.size > 0) await load("figures", true);
+  await removeOrphanImages(questions.filter((q) => gone.has(q.id)), questions);
+}
+
+/** Removes stored question images (from Anki decks) that no remaining question uses. */
+async function removeOrphanImages(deleted: Question[], all: Question[]) {
+  const gone = new Set(deleted.map((q) => q.id));
+  const stillUsed = new Set(all.filter((q) => !gone.has(q.id)).map((q) => q.image_url));
+  const orphans = new Set(deleted.map((q) => q.image_url).filter((u): u is string => !!u && !/^(https?:|data:|blob:)/i.test(u) && !stillUsed.has(u)));
+  for (const image of orphans) await removeImage(image).catch(() => undefined);
 }
 
 /** Counts what deleting these topics would take with it, for the confirmation dialog. */
@@ -52,4 +61,5 @@ export async function deleteTopics(topicIds: ID[], subjectId?: ID) {
   await removeRows("topics", topicIds);
   if (subjectId) await removeRows("subjects", [subjectId]);
   for (const f of doomedFigures) await removeImage(f.image).catch(() => undefined);
+  await removeOrphanImages(questions.filter((q) => ids.has(q.topic_id)), questions);
 }

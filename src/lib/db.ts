@@ -6,6 +6,7 @@ type Row<T extends TableName> = Tables[T];
 interface Store {
   list<T extends TableName>(table: T): Promise<Row<T>[]>;
   insert<T extends TableName>(table: T, row: Row<T>): Promise<Row<T>>;
+  insertMany<T extends TableName>(table: T, rows: Row<T>[]): Promise<Row<T>[]>;
   update<T extends TableName>(table: T, id: string, patch: Partial<Row<T>>): Promise<Row<T>>;
   remove(table: TableName, id: string): Promise<void>;
   removeMany(table: TableName, ids: string[]): Promise<void>;
@@ -21,6 +22,15 @@ const supabaseStore: Store = {
     const { data, error } = await supabase().from(table).insert(row).select().single();
     if (error) throw error;
     return data;
+  },
+  async insertMany(table, rows) {
+    const out = [];
+    for (let i = 0; i < rows.length; i += 500) {
+      const { data, error } = await supabase().from(table).insert(rows.slice(i, i + 500)).select();
+      if (error) throw error;
+      out.push(...(data ?? []));
+    }
+    return out;
   },
   async update(table, id, patch) {
     const { data, error } = await supabase().from(table).update(patch as never).eq("id", id).select().single();
@@ -61,6 +71,12 @@ const localStore: Store = {
   async insert(table, row) {
     const stored = { created_at: new Date().toISOString(), ...row };
     writeLocal(table, [...readLocal(table), stored]);
+    return stored;
+  },
+  async insertMany(table, rows) {
+    const created_at = new Date().toISOString();
+    const stored = rows.map((row) => ({ created_at, ...row }));
+    writeLocal(table, [...readLocal(table), ...stored]);
     return stored;
   },
   async update(table, id, patch) {

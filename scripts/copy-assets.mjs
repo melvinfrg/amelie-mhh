@@ -1,5 +1,5 @@
-// Copies the OCR worker, engine and language data into public/, so label detection
-// works without loading code from a third-party CDN.
+// Copies the OCR worker, engine and language data and the SQLite engine (for Anki decks)
+// into public/, so these features work without loading code from a third-party CDN.
 import { cpSync, mkdirSync } from "node:fs";
 
 const out = "public/tesseract";
@@ -12,3 +12,6 @@ for (const variant of ["lstm", "simd-lstm", "relaxedsimd-lstm"]) {
 for (const lang of ["deu", "lat"]) {
   cpSync(`node_modules/@tesseract.js-data/${lang}/4.0.0_best_int/${lang}.traineddata.gz`, `${out}/lang/${lang}.traineddata.gz`);
 }
+
+mkdirSync("public/sqljs", { recursive: true });
+cpSync("node_modules/sql.js/dist/sql-wasm-browser.wasm", "public/sqljs/sql-wasm-browser.wasm");

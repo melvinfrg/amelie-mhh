@@ -18,6 +18,7 @@ Persönliche Studien-Webseite für das Medizinstudium an der MHH: Termine mit Co
   - Statistik: Wiederholungen der letzten 30 Tage, Trefferquote pro Fach, schwächste Themen, Vorschau der fälligen Fragen.
 - **KI-Fragen:** PDF/Folien (Seitenbereich wählbar), eingefügter Text oder ein Link → Claude schlägt Multiple-Choice- und Erklär-Fragen mit Erklärung vor; jede Frage wird vor dem Übernehmen geprüft und kann bearbeitet werden.
 - **Abbildungen:** Anatomie-Bilder hochladen, Beschriftungen und Strukturen mit Rechtecken abdecken und in drei Ebenen (grob, mittel, fein) einteilen. Jede Markierung wird eine eigene Frage mit Wiederholung; feinere Strukturen einer Abbildung kommen erst, wenn die gröberen gelernt sind. Antwort eintippen (Tippfehler werden toleriert) oder nur aufdecken. Gedruckte Beschriftungen kann die Seite mit „Beschriftungen erkennen“ automatisch finden und abdecken (Texterkennung mit Tesseract direkt im Browser, kostenlos, Dateien liegen unter `public/tesseract`).
+- **Anki:** `.apkg`-Stapel (alte und neue Anki-Formate) im Browser einlesen; Unterstapel werden Themen, Lückentexte eine Frage pro Lücke, Bilder auf Wunsch mit. Bereits importierte Karten werden beim erneuten Import übersprungen. Export der eigenen Fragen als Textdatei, die Anki mit Stapeln direkt importiert. SQLite läuft dafür als WebAssembly aus `public/sqljs`.
 - **Datensicherung:** Export/Import aller Daten als JSON (Bilder der Abbildungen bleiben im Supabase-Speicher und sind nicht in der Datei).
 
 ## Lokal starten
@@ -41,7 +42,7 @@ Ohne Supabase-Zugangsdaten läuft die App im **Demo-Modus**: Alles wird nur im B
 ## Geplant
 
 - **Phase 2:** KI-Bewertung von Erklär-Aufgaben.
-- **Phase 3:** Anki-Import/-Export (`.apkg`), Kosten & Belege für die Steuererklärung.
+- **Phase 3:** Kosten & Belege für die Steuererklärung.
 
 ## Technik
 
