@@ -55,7 +55,7 @@ export async function removeImage(image: string) {
 
 const signed = new Map<string, { url: string; expires: number }>();
 
-async function imageUrl(image: string): Promise<string> {
+export async function imageUrl(image: string): Promise<string> {
   if (image.startsWith("data:") || !hasSupabase) return image;
   const cached = signed.get(image);
   if (cached && cached.expires > Date.now() + 60_000) return cached.url;
