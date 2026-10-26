@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { FigureQuestion } from "@/components/Figure";
 import { QuestionImage, Video } from "@/components/Media";
 import { Button, Card, Empty, PageHeader, ProgressBar, TextArea, TextInput } from "@/components/ui";
 import { formatInterval } from "@/lib/dates";
 import { checkAnswer } from "@/lib/figures";
+import { canDictate, keywords, mentioned, speak, stopSpeaking, useDictation } from "@/lib/speech";
 import { buildQueue, isNew, mcIsCorrect, previewDue, RATINGS, schedule, topicPath } from "@/lib/learning";
 import { useSettings } from "@/lib/settings";
 import { useTable } from "@/lib/useTable";
@@ -20,6 +21,25 @@ export default function UebenPage() {
       <Session />
     </Suspense>
   );
+}
+
+const READ_ALOUD_KEY = "amelie-mhh:pref:vorlesen";
+
+// Per-device preferences; storage may be unavailable (private mode), then the default applies.
+function readPreference(key: string) {
+  try {
+    return localStorage.getItem(key) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function writePreference(key: string, on: boolean) {
+  try {
+    localStorage.setItem(key, on ? "1" : "0");
+  } catch {
+    // Not persisted; the toggle still works for this visit.
+  }
 }
 
 /** Answers again within this window are repeated in the same session (learning steps). */
@@ -38,6 +58,13 @@ function Session() {
   const { settings, loaded: settingsLoaded } = useSettings();
 
   const [queue, setQueue] = useState<string[] | null>(null);
+  const [readAloud, setReadAloud] = useState(() => readPreference(READ_ALOUD_KEY));
+
+  function toggleReadAloud(on: boolean) {
+    setReadAloud(on);
+    writePreference(READ_ALOUD_KEY, on);
+    if (!on) stopSpeaking();
+  }
   const [done, setDone] = useState({ count: 0, correct: 0 });
   const ready = topics.loaded && questions.loaded && reviews.loaded && figures.loaded && settingsLoaded;
 
@@ -91,9 +118,18 @@ function Session() {
         title="Üben"
         subtitle={scope}
         action={
-          <Link href="/lernen">
-            <Button variant="ghost">← Übersicht</Button>
-          </Link>
+          <div className="flex gap-2">
+            <Button
+              variant={readAloud ? "primary" : "secondary"}
+              onClick={() => toggleReadAloud(!readAloud)}
+              title="Fragen beim Erscheinen vorlesen, wie in der mündlichen Prüfung"
+            >
+              {readAloud ? "🔊 Vorlesen an" : "🔇 Vorlesen aus"}
+            </Button>
+            <Link href="/lernen">
+              <Button variant="ghost">← Übersicht</Button>
+            </Link>
+          </div>
         }
       />
       {queue && (
@@ -130,6 +166,7 @@ function Session() {
             figure={current.figure_id ? figures.rows.find((f) => f.id === current.figure_id) : undefined}
             path={topicPath(topics.rows, current.topic_id)}
             retention={settings.desired_retention}
+            readAloud={readAloud}
             onRate={rate}
           />
         )}
@@ -143,12 +180,14 @@ function QuestionCard({
   figure,
   path,
   retention,
+  readAloud,
   onRate,
 }: {
   question: Question;
   figure?: Figure;
   path: string;
   retention: number;
+  readAloud: boolean;
   onRate: (q: Question, rating: Grade, correct: boolean, startedAt: number) => Promise<void>;
 }) {
   const [startedAt] = useState(() => Date.now());
@@ -160,6 +199,13 @@ function QuestionCard({
   const correct = question.type === "mc" ? mcIsCorrect(question, selected) : null;
   const typed = question.type === "occlusion" && revealed && text.trim() ? checkAnswer(text, question.answer ?? "") : null;
   const preview = revealed ? previewDue(question, retention) : null;
+
+  useEffect(() => {
+    if (!readAloud) return;
+    const options = question.type === "mc" ? question.options.map((o, i) => `${String.fromCharCode(65 + i)}: ${o.text}.`).join(" ") : "";
+    speak(`${question.prompt} ${options}`);
+    return stopSpeaking;
+  }, [question, readAloud]);
 
   function toggle(i: number) {
     if (revealed) return;
@@ -241,10 +287,11 @@ function QuestionCard({
             rows={5}
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Erkläre in eigenen Worten …"
+            placeholder={canDictate() ? "Erkläre in eigenen Worten, getippt oder gesprochen …" : "Erkläre in eigenen Worten …"}
             disabled={revealed}
             aria-label="Deine Antwort"
           />
+          {!revealed && <Dictation onText={(t) => setText((prev) => (prev ? `${prev} ${t}` : t))} />}
         </div>
       )}
 
@@ -278,6 +325,7 @@ function QuestionCard({
               <div className="rounded-lg bg-emerald-50 p-3 text-sm dark:bg-emerald-950">
                 <p className="mb-1 font-medium">Musterlösung</p>
                 <p className="whitespace-pre-wrap">{question.answer}</p>
+                {text.trim() && <KeywordCheck answer={question.answer} text={text} />}
               </div>
             )
           )}
@@ -311,5 +359,45 @@ function QuestionCard({
         </div>
       )}
     </Card>
+  );
+}
+
+function Dictation({ onText }: { onText: (text: string) => void }) {
+  const { listening, interim, error, start, stop } = useDictation(onText);
+  if (!canDictate()) return null;
+  return (
+    <div className="mt-2 space-y-1">
+      <Button type="button" variant={listening ? "danger" : "secondary"} onClick={listening ? stop : start}>
+        {listening ? "⏹ Aufnahme beenden" : "🎤 Antwort sprechen"}
+      </Button>
+      {listening && <p className="text-sm text-slate-500">{interim ? `… ${interim}` : "Ich höre zu …"}</p>}
+      {error && <p className="text-sm text-rose-700 dark:text-rose-400">{error}</p>}
+    </div>
+  );
+}
+
+/** Shows which terms of the model answer came up, as a quick aid for rating yourself. */
+function KeywordCheck({ answer, text }: { answer: string; text: string }) {
+  const terms = keywords(answer);
+  if (terms.length === 0) return null;
+  const hits = terms.filter((t) => mentioned(t, text));
+  return (
+    <div className="mt-3 border-t border-emerald-200 pt-2 dark:border-emerald-900">
+      <p className="mb-1 text-xs text-slate-600 dark:text-slate-300">
+        Du hast {hits.length} von {terms.length} Stichworten genannt:
+      </p>
+      <div className="flex flex-wrap gap-1">
+        {terms.map((t) => (
+          <span
+            key={t}
+            className={`rounded px-1.5 py-0.5 text-xs ${
+              hits.includes(t) ? "bg-emerald-600 text-white" : "bg-white text-slate-500 ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700"
+            }`}
+          >
+            {t}
+          </span>
+        ))}
+      </div>
+    </div>
   );
 }
