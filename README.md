@@ -16,7 +16,8 @@ Persönliche Studien-Webseite für das Medizinstudium an der MHH: Termine mit Co
   - Fragen anlegen, bearbeiten, pausieren, zurücksetzen, löschen; Text-Import für viele Fragen auf einmal.
   - Statistik: Wiederholungen der letzten 30 Tage, Trefferquote pro Fach, schwächste Themen, Vorschau der fälligen Fragen.
 - **KI-Fragen:** PDF/Folien (Seitenbereich wählbar), eingefügter Text oder ein Link → Claude schlägt Multiple-Choice- und Erklär-Fragen mit Erklärung vor; jede Frage wird vor dem Übernehmen geprüft und kann bearbeitet werden.
-- **Datensicherung:** Export/Import aller Daten als JSON.
+- **Abbildungen:** Anatomie-Bilder hochladen, Beschriftungen und Strukturen mit Rechtecken abdecken und in drei Ebenen (grob, mittel, fein) einteilen. Jede Markierung wird eine eigene Frage mit Wiederholung; feinere Strukturen einer Abbildung kommen erst, wenn die gröberen gelernt sind. Antwort eintippen (Tippfehler werden toleriert) oder nur aufdecken.
+- **Datensicherung:** Export/Import aller Daten als JSON (Bilder der Abbildungen bleiben im Supabase-Speicher und sind nicht in der Datei).
 
 ## Lokal starten
 
@@ -30,7 +31,7 @@ Ohne Supabase-Zugangsdaten läuft die App im **Demo-Modus**: Alles wird nur im B
 ## Mit Supabase und Vercel betreiben
 
 1. Auf [supabase.com](https://supabase.com) ein Projekt anlegen, Region **Central EU (Frankfurt)**.
-2. Im SQL-Editor den Inhalt von `supabase/migrations/0001_init.sql` ausführen. Das legt alle Tabellen an und schaltet Row-Level-Security ein, sodass jeder Account nur seine eigenen Daten sieht.
+2. Im SQL-Editor die Dateien aus `supabase/migrations/` der Reihe nach ausführen. Das legt alle Tabellen an und schaltet Row-Level-Security ein, sodass jeder Account nur seine eigenen Daten sieht.
 3. Unter *Authentication → Providers → Email* E-Mail-Login aktiviert lassen. Nachdem Amelies Konto angelegt ist, unter *Authentication → Sign In / Providers* „Allow new users to sign up“ ausschalten.
 4. Auf [vercel.com](https://vercel.com) das GitHub-Repo importieren und die Umgebungsvariablen aus `.env.example` setzen (Werte aus *Supabase → Project Settings → API*).
 5. Für die KI-Fragen in Vercel zusätzlich `ANTHROPIC_API_KEY` (Typ *Sensitive*) setzen, Schlüssel von [platform.claude.com](https://platform.claude.com). Die Schnittstelle `/api/generate` nimmt nur Anfragen angemeldeter Nutzer an.
@@ -38,7 +39,7 @@ Ohne Supabase-Zugangsdaten läuft die App im **Demo-Modus**: Alles wird nur im B
 
 ## Geplant
 
-- **Phase 2:** KI-Bewertung von Erklär-Aufgaben, Anatomie-Bildfragen mit markierten Bereichen.
+- **Phase 2:** KI-Bewertung von Erklär-Aufgaben.
 - **Phase 3:** Mündliche Prüfung mit Spracherkennung, Anki-Import/-Export (`.apkg`), Kosten & Belege für die Steuererklärung.
 
 ## Technik

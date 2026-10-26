@@ -20,6 +20,8 @@ export default function FragenPage() {
   );
 }
 
+const TYPE_LABEL: Record<QuestionType, string> = { mc: "Multiple Choice", explain: "Erklären", occlusion: "Abbildung" };
+
 type Draft = Omit<Question, "id" | "card" | "due" | "suspended">;
 
 const emptyDraft = (topic_id: string): Draft => ({
@@ -43,6 +45,7 @@ function Fragen() {
   const params = useSearchParams();
   const topics = useTable("topics");
   const questions = useTable("questions");
+  const figures = useTable("figures");
   const [topicFilter, setTopicFilter] = useState(params.get("thema") ?? "");
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<{ id?: string; draft: Draft } | null>(null);
@@ -83,6 +86,13 @@ function Fragen() {
     }
     setImportText("");
     setImporting(false);
+  }
+
+  async function removeQuestion(q: Question) {
+    // An occlusion question would come back on the next save of its figure, so drop its mask too.
+    const figure = figures.rows.find((f) => f.id === q.figure_id);
+    if (figure) await figures.update(figure.id, { masks: figure.masks.filter((m) => m.id !== q.mask_id) });
+    await questions.remove(q.id);
   }
 
   function setDraft(patch: Partial<Draft>) {
@@ -225,10 +235,10 @@ function Fragen() {
             <div className="flex flex-wrap items-start gap-3">
               <div className="min-w-0 flex-1">
                 <p className="text-xs text-slate-500">
-                  {topicPath(topics.rows, q.topic_id)} · {q.type === "mc" ? "Multiple Choice" : "Erklären"}
+                  {topicPath(topics.rows, q.topic_id)} · {TYPE_LABEL[q.type]}
                   {q.suspended && " · pausiert"}
                 </p>
-                <p className="mt-1 line-clamp-2 whitespace-pre-wrap">{q.prompt}</p>
+                <p className="mt-1 line-clamp-2 whitespace-pre-wrap">{q.type === "occlusion" ? `${q.prompt} → ${q.answer}` : q.prompt}</p>
                 <p className="mt-1 text-xs text-slate-500">
                   {isNew(q)
                     ? "Neu, noch nicht gelernt"
@@ -236,9 +246,15 @@ function Fragen() {
                 </p>
               </div>
               <div className="flex gap-1">
-                <Button variant="ghost" onClick={() => setEditing({ id: q.id, draft: { ...q } })}>
-                  Bearbeiten
-                </Button>
+                {q.type === "occlusion" ? (
+                  <Link href={`/lernen/abbildungen?id=${q.figure_id}`}>
+                    <Button variant="ghost">Bearbeiten</Button>
+                  </Link>
+                ) : (
+                  <Button variant="ghost" onClick={() => setEditing({ id: q.id, draft: { ...q } })}>
+                    Bearbeiten
+                  </Button>
+                )}
                 <Button variant="ghost" onClick={() => questions.update(q.id, { suspended: !q.suspended })}>
                   {q.suspended ? "Aktivieren" : "Pausieren"}
                 </Button>
@@ -249,7 +265,7 @@ function Fragen() {
                 >
                   Zurücksetzen
                 </Button>
-                <Button variant="danger" onClick={() => confirm("Frage löschen?") && questions.remove(q.id)}>
+                <Button variant="danger" onClick={() => confirm("Frage löschen?") && removeQuestion(q)}>
                   Löschen
                 </Button>
               </div>

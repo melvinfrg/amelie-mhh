@@ -3,14 +3,16 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
+import { FigureQuestion } from "@/components/Figure";
 import { QuestionImage, Video } from "@/components/Media";
-import { Button, Card, Empty, PageHeader, ProgressBar, TextArea } from "@/components/ui";
+import { Button, Card, Empty, PageHeader, ProgressBar, TextArea, TextInput } from "@/components/ui";
 import { formatInterval } from "@/lib/dates";
+import { checkAnswer } from "@/lib/figures";
 import { buildQueue, isNew, mcIsCorrect, previewDue, RATINGS, schedule, topicPath } from "@/lib/learning";
 import { useSettings } from "@/lib/settings";
 import { useTable } from "@/lib/useTable";
 import type { Grade } from "ts-fsrs";
-import type { Question } from "@/lib/types";
+import type { Figure, Question } from "@/lib/types";
 
 export default function UebenPage() {
   return (
@@ -27,33 +29,42 @@ function Session() {
   const params = useSearchParams();
   const subjectId = params.get("fach");
   const topicId = params.get("thema");
+  const figureId = params.get("abbildung");
   const subjects = useTable("subjects");
   const topics = useTable("topics");
   const questions = useTable("questions");
   const reviews = useTable("reviews");
+  const figures = useTable("figures");
   const { settings, loaded: settingsLoaded } = useSettings();
 
   const [queue, setQueue] = useState<string[] | null>(null);
   const [done, setDone] = useState({ count: 0, correct: 0 });
-  const ready = topics.loaded && questions.loaded && reviews.loaded && settingsLoaded;
+  const ready = topics.loaded && questions.loaded && reviews.loaded && figures.loaded && settingsLoaded;
 
   // Build the queue once per filter, so answering doesn't reshuffle it.
-  const filterKey = `${subjectId}|${topicId}`;
+  const filterKey = `${subjectId}|${topicId}|${figureId}`;
   const [builtFor, setBuiltFor] = useState<string | null>(null);
+  const freshQueue = () =>
+    buildQueue({ topics: topics.rows, questions: questions.rows, reviews: reviews.rows, settings, subjectId, topicId, figureId }).map(
+      (q) => q.id,
+    );
   if (ready && builtFor !== filterKey) {
     setBuiltFor(filterKey);
-    setQueue(
-      buildQueue({ topics: topics.rows, questions: questions.rows, reviews: reviews.rows, settings, subjectId, topicId }).map((q) => q.id),
-    );
+    setQueue(freshQueue());
     setDone({ count: 0, correct: 0 });
   }
 
   const current = queue?.length ? questions.rows.find((q) => q.id === queue[0]) : undefined;
-  const scope = topicId
-    ? topicPath(topics.rows, topicId)
+  // Finishing coarse structures can open finer ones of the same figure.
+  const unlocked = queue && !current ? freshQueue() : [];
+  const figureFilter = figures.rows.find((f) => f.id === figureId);
+  const scope = figureFilter
+    ? `${topicPath(topics.rows, figureFilter.topic_id)} › ${figureFilter.title}`
+    : topicId
+      ? topicPath(topics.rows, topicId)
     : subjectId
-      ? subjects.rows.find((s) => s.id === subjectId)?.name
-      : "Alle Fächer";
+        ? subjects.rows.find((s) => s.id === subjectId)?.name
+        : "Alle Fächer";
 
   async function rate(question: Question, rating: Grade, correct: boolean, startedAt: number) {
     const now = new Date();
@@ -105,12 +116,18 @@ function Session() {
                 ? `${done.count} Fragen beantwortet, ${Math.round((done.correct / done.count) * 100)}% richtig.`
                 : "Es sind gerade keine Fragen fällig. Neue Fragen legst du unter „Fragen“ an."}
             </p>
+            {unlocked.length > 0 && (
+              <Button className="mt-4" onClick={() => setQueue(unlocked)}>
+                Weiter mit {unlocked.length === 1 ? "einer freigeschalteten Frage" : `${unlocked.length} freigeschalteten Fragen`}
+              </Button>
+            )}
           </Card>
         )}
         {current && (
           <QuestionCard
             key={`${current.id}-${done.count}`}
             question={current}
+            figure={current.figure_id ? figures.rows.find((f) => f.id === current.figure_id) : undefined}
             path={topicPath(topics.rows, current.topic_id)}
             retention={settings.desired_retention}
             onRate={rate}
@@ -123,11 +140,13 @@ function Session() {
 
 function QuestionCard({
   question,
+  figure,
   path,
   retention,
   onRate,
 }: {
   question: Question;
+  figure?: Figure;
   path: string;
   retention: number;
   onRate: (q: Question, rating: Grade, correct: boolean, startedAt: number) => Promise<void>;
@@ -139,6 +158,7 @@ function QuestionCard({
   const [busy, setBusy] = useState(false);
   const multi = question.options.filter((o) => o.correct).length > 1;
   const correct = question.type === "mc" ? mcIsCorrect(question, selected) : null;
+  const typed = question.type === "occlusion" && revealed && text.trim() ? checkAnswer(text, question.answer ?? "") : null;
   const preview = revealed ? previewDue(question, retention) : null;
 
   function toggle(i: number) {
@@ -157,7 +177,7 @@ function QuestionCard({
         <span>{path}</span>
         {isNew(question) && <span className="rounded bg-sky-100 px-1.5 py-0.5 text-sky-800 dark:bg-sky-950 dark:text-sky-200">neu</span>}
         <span className="rounded bg-slate-100 px-1.5 py-0.5 dark:bg-slate-800">
-          {question.type === "mc" ? (multi ? "Mehrfachauswahl" : "Einfachauswahl") : "Erklären"}
+          {question.type === "mc" ? (multi ? "Mehrfachauswahl" : "Einfachauswahl") : question.type === "occlusion" ? "Abbildung" : "Erklären"}
         </span>
       </div>
       <h2 className="whitespace-pre-wrap text-lg font-medium">{question.prompt}</h2>
@@ -167,7 +187,30 @@ function QuestionCard({
         </div>
       )}
 
-      {question.type === "mc" ? (
+      {question.type === "occlusion" ? (
+        <div className="mt-4 space-y-3">
+          {figure ? (
+            <FigureQuestion figure={figure} maskId={question.mask_id ?? ""} revealed={revealed} />
+          ) : (
+            <p className="text-sm text-rose-700">Die Abbildung zu dieser Frage fehlt.</p>
+          )}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              setRevealed(true);
+            }}
+          >
+            <TextInput
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Name der Struktur (optional eintippen)"
+              disabled={revealed}
+              aria-label="Deine Antwort"
+              autoComplete="off"
+            />
+          </form>
+        </div>
+      ) : question.type === "mc" ? (
         <ul className="mt-4 space-y-2">
           {question.options.map((o, i) => {
             const picked = selected.includes(i);
@@ -208,12 +251,25 @@ function QuestionCard({
       {!revealed ? (
         <div className="mt-4">
           <Button onClick={() => setRevealed(true)} disabled={question.type === "mc" && selected.length === 0}>
-            {question.type === "mc" ? "Prüfen" : "Lösung zeigen"}
+            {question.type === "mc" ? "Prüfen" : question.type === "occlusion" ? "Aufdecken" : "Lösung zeigen"}
           </Button>
         </div>
       ) : (
         <div className="mt-5 space-y-4">
-          {question.type === "mc" ? (
+          {question.type === "occlusion" ? (
+            <p className="font-medium">
+              {question.answer}
+              {typed && (
+                <span
+                  className={`ml-2 text-sm ${
+                    typed === "right" ? "text-emerald-700 dark:text-emerald-400" : typed === "close" ? "text-amber-700 dark:text-amber-400" : "text-rose-700 dark:text-rose-400"
+                  }`}
+                >
+                  {typed === "right" ? "✓ richtig" : typed === "close" ? "fast, schau auf die Schreibweise" : `✗ du hattest „${text.trim()}“`}
+                </span>
+              )}
+            </p>
+          ) : question.type === "mc" ? (
             <p className={`font-medium ${correct ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}>
               {correct ? "Richtig!" : "Leider falsch."}
             </p>
