@@ -112,21 +112,11 @@ function Fragen() {
             <Button variant="secondary" onClick={() => setImporting(!importing)}>
               Text-Import
             </Button>
-            <Button
-              disabled={topics.rows.length === 0}
-              onClick={() => setEditing({ draft: emptyDraft(topicFilter) })}
-              title={topics.rows.length === 0 ? "Lege zuerst unter „Lernen“ ein Thema an" : undefined}
-            >
-              + Frage
-            </Button>
+            <Button onClick={() => setEditing({ draft: emptyDraft(topicFilter) })}>+ Frage</Button>
           </div>
         }
       />
       <ErrorNote error={questions.error} />
-      {topics.loaded && topics.rows.length === 0 && (
-        <Card className="mb-4 text-sm">Lege zuerst unter „Lernen“ ein Fach und ein Thema an, dann kannst du Fragen hinzufügen.</Card>
-      )}
-
       {importing && (
         <Card className="mb-6 space-y-3">
           <p className="text-sm text-slate-600 dark:text-slate-300">
@@ -135,8 +125,8 @@ function Fragen() {
           </p>
           <TextArea rows={10} value={importText} onChange={(e) => setImportText(e.target.value)} placeholder={IMPORT_EXAMPLE} className="font-mono" />
           <div className="flex flex-wrap items-center gap-2">
-            <div className="w-64">
-              <TopicSelect topics={topics.rows} value={importTopic} onChange={setImportTopic} />
+            <div className="w-full sm:w-96">
+              <TopicSelect topics={topics.rows} value={importTopic} onChange={setImportTopic} creatable />
             </div>
             <Button onClick={runImport} disabled={parsed.length === 0}>
               {parsed.length} Fragen importieren
@@ -153,7 +143,7 @@ function Fragen() {
           <form onSubmit={save} className="space-y-3">
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label="Thema">
-                <TopicSelect topics={topics.rows} value={editing.draft.topic_id} onChange={(v) => setDraft({ topic_id: v })} />
+                <TopicSelect topics={topics.rows} value={editing.draft.topic_id} onChange={(v) => setDraft({ topic_id: v })} creatable />
               </Field>
               <Field label="Fragetyp">
                 <Select value={editing.draft.type} onChange={(e) => setDraft({ type: e.target.value as QuestionType })}>

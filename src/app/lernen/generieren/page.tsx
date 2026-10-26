@@ -202,7 +202,7 @@ export default function GenerierenPage() {
 
       <Card className="mb-6 space-y-4">
         <Field label="In welches Thema sollen die Fragen?">
-          <TopicSelect topics={topics.rows} value={topicId} onChange={setTopicId} />
+          <TopicSelect topics={topics.rows} value={topicId} onChange={setTopicId} creatable />
         </Field>
 
         {mode === "api" && (

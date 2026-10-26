@@ -34,6 +34,13 @@ function Overview() {
   const [topicId, setTopicId] = useState("");
   const [title, setTitle] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+
+  function chooseFile(next: File | null) {
+    if (preview) URL.revokeObjectURL(preview);
+    setFile(next);
+    setPreview(next ? URL.createObjectURL(next) : null);
+  }
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,6 +60,7 @@ function Overview() {
     }
   }
 
+  const showForm = adding || (figures.loaded && figures.rows.length === 0);
   const sorted = [...figures.rows].sort(
     (a, b) => topicPath(topics.rows, a.topic_id).localeCompare(topicPath(topics.rows, b.topic_id)) || a.title.localeCompare(b.title),
   );
@@ -62,36 +70,41 @@ function Overview() {
       <PageHeader
         title="Abbildungen"
         subtitle="Strukturen auf Anatomie-Bildern abdecken und abfragen, von grob nach fein."
-        action={<Button onClick={() => setAdding(!adding)}>+ Abbildung</Button>}
+        action={figures.rows.length > 0 && <Button onClick={() => setAdding(!adding)}>+ Abbildung</Button>}
       />
       <ErrorNote error={figures.error} />
 
-      {adding && (
+      {showForm && (
         <Card className="mb-6">
           <form onSubmit={create} className="space-y-3">
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label="Thema">
-                <TopicSelect topics={topics.rows} value={topicId} onChange={setTopicId} />
+                <TopicSelect topics={topics.rows} value={topicId} onChange={setTopicId} creatable />
               </Field>
               <Field label="Titel">
                 <TextInput value={title} onChange={(e) => setTitle(e.target.value)} placeholder="z. B. Schultergelenk von ventral" />
               </Field>
             </div>
-            <Field label="Bild (Foto, Screenshot oder Scan)">
-              <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="block text-sm" />
-            </Field>
+            <div>
+              <p className="mb-1 text-sm font-medium text-slate-700 dark:text-slate-300">Bild (Foto, Screenshot oder Scan)</p>
+              <label className="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-teal-600/50 bg-teal-50/50 px-4 py-6 text-center hover:bg-teal-50 dark:bg-teal-950/30 dark:hover:bg-teal-950/60">
+                <input type="file" accept="image/*" onChange={(e) => chooseFile(e.target.files?.[0] ?? null)} className="sr-only" />
+                {preview ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- local preview of the chosen file
+                  <img src={preview} alt="" className="max-h-48 rounded-lg" />
+                ) : (
+                  <span className="text-3xl">🖼️</span>
+                )}
+                <span className="font-medium text-teal-800 dark:text-teal-300">{file ? file.name : "Bild auswählen"}</span>
+                <span className="text-xs text-slate-500">{file ? "Tippen, um ein anderes Bild zu wählen" : "Am Handy auch direkt mit der Kamera"}</span>
+              </label>
+            </div>
             {error && <p className="text-sm text-rose-700 dark:text-rose-400">{error}</p>}
-            <Button type="submit" disabled={busy}>
+            <Button type="submit" disabled={busy || !topicId || !file}>
               {busy ? "Lädt hoch …" : "Hochladen und Strukturen markieren"}
             </Button>
           </form>
         </Card>
-      )}
-
-      {figures.loaded && figures.rows.length === 0 && !adding && (
-        <Empty>
-          Noch keine Abbildungen. Lade ein Bild hoch, z. B. eine Atlas-Seite oder eine Folie, und decke die Beschriftungen ab.
-        </Empty>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
