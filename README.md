@@ -42,7 +42,7 @@ Ohne Supabase-Zugangsdaten läuft die App im **Demo-Modus**: Alles wird nur im B
 ## Geplant
 
 - **Phase 2:** KI-Bewertung von Erklär-Aufgaben.
-- **Phase 3:** Anki-Import/-Export (`.apkg`), Kosten & Belege für die Steuererklärung.
+- **Phase 3:** Anki-Import/-Export (`.apkg`).
 
 ## Technik
 
