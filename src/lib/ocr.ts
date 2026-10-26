@@ -57,7 +57,7 @@ export async function detectLabels(src: string, existing: Mask[], level: number,
 
   const { createWorker } = await import("tesseract.js");
   const worker = await createWorker(["deu", "lat"], 1, {
-    // Served from public/tesseract (see scripts/copy-tesseract.mjs).
+    // Served from public/tesseract (see scripts/copy-assets.mjs).
     workerPath: "/tesseract/worker.min.js",
     corePath: "/tesseract/core",
     langPath: "/tesseract/lang",
