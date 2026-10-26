@@ -108,6 +108,19 @@ export interface Figure extends Base {
   hide_all: boolean;
 }
 
+export interface Expense extends Base {
+  /** YYYY-MM-DD; the calendar year decides the tax year. */
+  date: string;
+  title: string;
+  /** Euro, gross. Supabase returns numeric columns as numbers or strings, so read it with Number(). */
+  amount: number;
+  category: string;
+  note: string | null;
+  /** Storage path in the "receipts" bucket, or a data URL in demo mode. */
+  receipt: string | null;
+  receipt_name: string | null;
+}
+
 export interface Review extends Base {
   question_id: ID;
   topic_id: ID;
@@ -133,6 +146,7 @@ export interface Tables {
   figures: Figure;
   questions: Question;
   reviews: Review;
+  expenses: Expense;
   settings: Settings;
 }
 
@@ -147,5 +161,6 @@ export const TABLES: TableName[] = [
   "events",
   "todos",
   "links",
+  "expenses",
   "settings",
 ];

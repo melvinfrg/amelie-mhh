@@ -15,6 +15,7 @@ const NAV = [
   { href: "/lernen/generieren", label: "KI-Fragen", icon: "✨" },
   { href: "/lernen/abbildungen", label: "Abbildungen", icon: "🦴" },
   { href: "/lernen/statistik", label: "Statistik", icon: "📊" },
+  { href: "/kosten", label: "Kosten", icon: "💶" },
   { href: "/links", label: "Links", icon: "🔗" },
   { href: "/einstellungen", label: "Einstellungen", icon: "⚙️" },
 ];

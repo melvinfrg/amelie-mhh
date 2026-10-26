@@ -7,6 +7,7 @@ Persönliche Studien-Webseite für das Medizinstudium an der MHH: Termine mit Co
 - **Übersicht:** nächste Prüfung mit Countdown, heute fällige Fragen, Lernserie, offene To-dos.
 - **Termine:** Prüfungen, Testate, Fristen mit Countdown und Vorbereitungsstand; Export als `.ics` für den Handy-Kalender.
 - **To-dos:** mit Fälligkeit, Priorität und Fach.
+- **Kosten & Belege:** Ausgaben fürs Studium mit Foto oder PDF des Belegs, Summe pro Jahr und Kategorie, Export als CSV oder als ZIP mit allen Belegen für die Steuererklärung. Belege liegen im privaten Supabase-Speicher (`receipts`).
 - **Links:** nach Kategorien, mit Vorschlägen (AMBOSS, via medici, Kenhub, AnkiWeb, IMPP …).
 - **Lernen:**
   - Fächer → Themen → Unterthemen als Baum. „Von groß nach klein“: Unterthemen öffnen sich erst, wenn das übergeordnete Thema sitzt (Schwelle einstellbar, abschaltbar). Neue Fragen kommen immer zuerst aus den groben Themen.
