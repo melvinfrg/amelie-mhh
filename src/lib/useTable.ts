@@ -46,6 +46,16 @@ export function load(table: TableName, force = false) {
   return loading;
 }
 
+/** Inserts many rows in a few requests and adds them to the shared cache. */
+export async function insertRows<T extends TableName>(table: T, rows: (Omit<Row<T>, "id"> & { id?: string })[]) {
+  if (rows.length === 0) return [];
+  const created = await db.insertMany(table, rows.map((r) => ({ ...r, id: r.id ?? newId() }) as Row<T>));
+  // A table that was never loaded stays unloaded, so the next load fetches everything.
+  const before = entry(table).rows;
+  if (before) set(table, { rows: [...before, ...created] });
+  return created;
+}
+
 /** Deletes rows and drops them from the shared cache, so every page sees the change at once. */
 export async function removeRows(table: TableName, ids: string[]) {
   if (ids.length === 0) return;

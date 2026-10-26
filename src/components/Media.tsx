@@ -1,3 +1,7 @@
+"use client";
+
+import { useFigureImage } from "@/lib/figures";
+
 /** Turns a YouTube/Vimeo link into an embed URL; returns null for other links. */
 export function embedUrl(url: string): string | null {
   try {
@@ -53,7 +57,16 @@ export function Video({ url }: { url: string }) {
   );
 }
 
+/** True for images kept in the private bucket (e.g. from an Anki deck) rather than at a public URL. */
+export function isStoredImage(url: string) {
+  return !/^(https?:|data:|blob:)/i.test(url);
+}
+
 export function QuestionImage({ url }: { url: string }) {
-  // eslint-disable-next-line @next/next/no-img-element -- user-provided URLs from any host
-  return <img src={url} alt="Abbildung zur Frage" className="max-h-96 w-auto rounded-lg border border-slate-200 dark:border-slate-800" />;
+  const stored = useFigureImage(isStoredImage(url) ? url : undefined);
+  const src = isStoredImage(url) ? stored.url : url;
+  if (stored.error) return <p className="text-sm text-rose-700">Bild konnte nicht geladen werden: {stored.error}</p>;
+  if (!src) return <div className="h-48 w-full max-w-md animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800" />;
+  // eslint-disable-next-line @next/next/no-img-element -- user-provided URLs from any host and signed storage URLs
+  return <img src={src} alt="Abbildung zur Frage" className="max-h-96 w-auto rounded-lg border border-slate-200 dark:border-slate-800" />;
 }
