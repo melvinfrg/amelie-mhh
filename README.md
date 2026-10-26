@@ -11,6 +11,7 @@ Persönliche Studien-Webseite für das Medizinstudium an der MHH: Termine mit Co
 - **Lernen:**
   - Fächer → Themen → Unterthemen als Baum. „Von groß nach klein“: Unterthemen öffnen sich erst, wenn das übergeordnete Thema sitzt (Schwelle einstellbar, abschaltbar). Neue Fragen kommen immer zuerst aus den groben Themen.
   - Multiple Choice (Einfach- und Mehrfachauswahl) und Erklär-Aufgaben mit Musterlösung.
+  - Mündliche Prüfung: Fragen vorlesen lassen (🔊) und Erklär-Aufgaben laut beantworten (🎤, Spracherkennung des Browsers, Chrome/Edge/Safari). Nach dem Aufdecken zeigt die Seite, welche Stichworte der Musterlösung genannt wurden.
   - Jede Frage mit Erklärung, optional Bild, Video (YouTube/Vimeo eingebettet) und Quelle.
   - Wiederholung nach [FSRS](https://github.com/open-spaced-repetition/ts-fsrs) (der Algorithmus aus Anki), Ziel-Behaltensquote und neue Fragen pro Tag einstellbar.
   - Fragen anlegen, bearbeiten, pausieren, zurücksetzen, löschen; Text-Import für viele Fragen auf einmal.
@@ -40,7 +41,7 @@ Ohne Supabase-Zugangsdaten läuft die App im **Demo-Modus**: Alles wird nur im B
 ## Geplant
 
 - **Phase 2:** KI-Bewertung von Erklär-Aufgaben.
-- **Phase 3:** Mündliche Prüfung mit Spracherkennung, Anki-Import/-Export (`.apkg`), Kosten & Belege für die Steuererklärung.
+- **Phase 3:** Anki-Import/-Export (`.apkg`), Kosten & Belege für die Steuererklärung.
 
 ## Technik
 
