@@ -232,7 +232,9 @@ export function parseExamList(items: PdfItem[], studyYear: number, academicYear:
     const title = type ? `${moduleName} (${type})` : moduleName;
     const roomRaw = get("room");
     const room = roomRaw === "Abt." ? "Abteilung (wird bekanntgegeben)" : roomRaw || null;
-    const times = [...get("time").matchAll(/(\d{1,2}):(\d{2}):?\s*-\s*(\d{1,2}):(\d{2})/g)];
+    // "8:30:-18:00" also occurs.
+    const timeText = get("time").replace(/:\s*-/g, "-");
+    const times = [...timeText.matchAll(/(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})/g)];
     const remarks = get("notes");
     const deadline = dmy(get("deadline"));
 
@@ -242,8 +244,8 @@ export function parseExamList(items: PdfItem[], studyYear: number, academicYear:
     if (n > 1) key += `|${n}`;
 
     const notes = [
-      times.length > 1 ? `Zeiten je nach Kohorte: ${get("time")}` : null,
-      times.length === 1 && to ? `jeweils ${get("time")}, Termin wird zugeteilt` : null,
+      times.length > 1 ? `Zeiten je nach Kohorte: ${timeText}` : null,
+      times.length === 1 && to ? `jeweils ${timeText}, Termin wird zugeteilt` : null,
       remarks || null,
       deadline ? `An-/Abmeldung bis ${deadline.map((v) => String(v).padStart(2, "0")).join(".")}` : null,
       `Quelle: MHH-Prüfungsliste ${studyYear}. Studienjahr ${academicYear.replace("_", "/")}`,

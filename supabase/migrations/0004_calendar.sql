@@ -21,6 +21,7 @@ create policy "own rows" on calendar_feeds for all to authenticated
   using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 
 -- Calendar apps can't log in, so the feed is read through its secret token only.
+-- The left join keeps one row for a feed without events, so an empty calendar still subscribes.
 create function public.calendar_feed(feed_token uuid)
 returns table (
   feed_name text,
@@ -45,7 +46,7 @@ as $$
   select f.name, f.filter, e.id, e.title, e.kind, e.starts_at, e.ends_at, e.all_day, e.location, e.notes,
          e.subject_id, s.name, e.done
   from public.calendar_feeds f
-  join public.events e on e.user_id = f.user_id
+  left join public.events e on e.user_id = f.user_id
   left join public.subjects s on s.id = e.subject_id
   where f.token = feed_token;
 $$;

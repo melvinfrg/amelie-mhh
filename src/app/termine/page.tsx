@@ -2,13 +2,13 @@
 
 import { useState, type FormEvent } from "react";
 import { Button, Card, Empty, ErrorNote, Field, PageHeader, ProgressBar, Select, TextArea, TextInput } from "@/components/ui";
-import { countdown, daysUntil, formatDate, toLocalInput } from "@/lib/dates";
-import { download, toIcs } from "@/lib/ical";
+import { CalendarExport } from "@/components/CalendarExport";
+import { MhhSuggestions } from "@/components/MhhSuggestions";
+import { localMidnight, dayKey, daysUntil, eventCountdown, formatEventDate, isCurrent, toLocalInput } from "@/lib/dates";
 import { KIND_LABEL } from "@/lib/labels";
 import { SubjectDot } from "@/lib/subjects";
 import { useTable } from "@/lib/useTable";
 import type { EventKind, StudyEvent } from "@/lib/types";
-
 
 type Draft = Omit<StudyEvent, "id">;
 
@@ -21,6 +21,8 @@ const emptyDraft = (): Draft => ({
   notes: "",
   progress: 0,
   done: false,
+  ends_at: null,
+  all_day: false,
 });
 
 export default function TerminePage() {
@@ -28,10 +30,11 @@ export default function TerminePage() {
   const subjects = useTable("subjects");
   const [editing, setEditing] = useState<{ id?: string; draft: Draft } | null>(null);
   const [showPast, setShowPast] = useState(false);
+  const [showExport, setShowExport] = useState(false);
 
   const sorted = [...events.rows].sort((a, b) => a.starts_at.localeCompare(b.starts_at));
-  const upcoming = sorted.filter((e) => daysUntil(e.starts_at) >= 0 && !e.done);
-  const past = sorted.filter((e) => daysUntil(e.starts_at) < 0 || e.done).reverse();
+  const upcoming = sorted.filter((e) => isCurrent(e) && !e.done);
+  const past = sorted.filter((e) => !isCurrent(e) || e.done).reverse();
 
   async function save(e: FormEvent) {
     e.preventDefault();
@@ -60,13 +63,13 @@ export default function TerminePage() {
             </div>
             <h3 className={`mt-1 font-medium ${ev.done ? "line-through opacity-60" : ""}`}>{ev.title}</h3>
             <p className="text-sm text-slate-500">
-              {formatDate(ev.starts_at, true)}
+              {formatEventDate(ev)}
               {ev.location ? ` · ${ev.location}` : ""}
             </p>
             {ev.notes && <p className="mt-1 whitespace-pre-wrap text-sm">{ev.notes}</p>}
           </div>
           <div className="text-right">
-            <p className={`text-lg font-semibold ${urgent ? "text-rose-600" : ""}`}>{countdown(ev.starts_at)}</p>
+            <p className={`text-lg font-semibold ${urgent ? "text-rose-600" : ""}`}>{eventCountdown(ev)}</p>
           </div>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -105,14 +108,20 @@ export default function TerminePage() {
         subtitle="Prüfungen, Testate und Fristen mit Countdown und Vorbereitungsstand"
         action={
           <div className="flex gap-2">
-            <Button variant="secondary" onClick={() => download("studium-termine.ics", toIcs(events.rows), "text/calendar")}>
-              Kalender-Export (.ics)
+            <Button variant="secondary" onClick={() => setShowExport(!showExport)}>
+              Exportieren / Abo
             </Button>
             <Button onClick={() => setEditing({ draft: emptyDraft() })}>+ Termin</Button>
           </div>
         }
       />
       <ErrorNote error={events.error} />
+      {showExport && (
+        <div className="mb-6">
+          <CalendarExport />
+        </div>
+      )}
+      <MhhSuggestions />
 
       {editing && (
         <Card className="mb-6">
@@ -137,17 +146,7 @@ export default function TerminePage() {
                 ))}
               </Select>
             </Field>
-            <Field label="Datum & Uhrzeit">
-              <TextInput
-                type="datetime-local"
-                required
-                value={toLocalInput(editing.draft.starts_at)}
-                onChange={(e) =>
-                  e.target.value &&
-                  setEditing({ ...editing, draft: { ...editing.draft, starts_at: new Date(e.target.value).toISOString() } })
-                }
-              />
-            </Field>
+            <DateFields draft={editing.draft} onChange={(patch) => setEditing({ ...editing, draft: { ...editing.draft, ...patch } })} />
             <Field label="Fach">
               <Select
                 value={editing.draft.subject_id ?? ""}
@@ -207,6 +206,49 @@ export default function TerminePage() {
           <ProgressBar value={upcoming.reduce((s, e) => s + e.progress, 0) / upcoming.length / 100} />
         </div>
       )}
+    </>
+  );
+}
+
+/** Start and optional end; all-day events pick days, others a date and time. */
+function DateFields({ draft, onChange }: { draft: Draft; onChange: (patch: Partial<Draft>) => void }) {
+  const allDay = Boolean(draft.all_day);
+  const setAllDay = (on: boolean) =>
+    onChange({
+      all_day: on,
+      starts_at: on ? localMidnight(dayKey(draft.starts_at)) : new Date(new Date(draft.starts_at).setHours(9, 0, 0, 0)).toISOString(),
+      ends_at: draft.ends_at ? (on ? localMidnight(dayKey(draft.ends_at)) : null) : null,
+    });
+  return (
+    <>
+      <Field label={allDay ? "Erster Tag" : "Beginn"}>
+        <TextInput
+          type={allDay ? "date" : "datetime-local"}
+          required
+          value={allDay ? dayKey(draft.starts_at) : toLocalInput(draft.starts_at)}
+          onChange={(e) => {
+            if (!e.target.value) return;
+            const starts_at = allDay ? localMidnight(e.target.value) : new Date(e.target.value).toISOString();
+            // Moving the start keeps an end that would now lie before it from staying behind.
+            const ends_at = draft.ends_at && draft.ends_at < starts_at ? null : draft.ends_at;
+            onChange({ starts_at, ends_at });
+          }}
+        />
+      </Field>
+      <Field label={allDay ? "Letzter Tag (optional)" : "Ende (optional)"}>
+        <TextInput
+          type={allDay ? "date" : "datetime-local"}
+          min={allDay ? dayKey(draft.starts_at) : toLocalInput(draft.starts_at)}
+          value={draft.ends_at ? (allDay ? dayKey(draft.ends_at) : toLocalInput(draft.ends_at)) : ""}
+          onChange={(e) =>
+            onChange({ ends_at: e.target.value ? (allDay ? localMidnight(e.target.value) : new Date(e.target.value).toISOString()) : null })
+          }
+        />
+      </Field>
+      <label className="flex items-center gap-2 text-sm sm:col-span-2">
+        <input type="checkbox" checked={allDay} onChange={(e) => setAllDay(e.target.checked)} />
+        Ganztägig (z. B. Quintil, Ferien, Frist)
+      </label>
     </>
   );
 }

@@ -88,3 +88,9 @@ export function eventCountdown(e: { starts_at: string; ends_at?: string | null; 
   }
   return countdown(e.starts_at);
 }
+
+/** Local midnight of a "YYYY-MM-DD" day, as stored for all-day events. */
+export function localMidnight(day: string) {
+  const [y, m, d] = day.split("-").map(Number);
+  return new Date(y, m - 1, d).toISOString();
+}
