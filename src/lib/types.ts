@@ -257,6 +257,48 @@ export interface BatziEvent extends Base {
   recurrence: "none" | "weekly" | "biweekly" | "monthly" | "yearly";
 }
 
+export type CvSection = "beruf" | "ausbildung" | "schule" | "praktikum" | "weiterbildung" | "ehrenamt" | "sonstiges";
+
+export interface CvSkill {
+  name: string;
+  /** 1–5 */
+  level: number;
+}
+
+export interface CvLanguage {
+  name: string;
+  level: string;
+}
+
+export interface CvProfile extends Base {
+  name: string;
+  headline: string | null;
+  birth_date: string | null;
+  birth_place: string | null;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  website: string | null;
+  summary: string | null;
+  skills: CvSkill[];
+  languages: CvLanguage[];
+  interests: string | null;
+}
+
+export interface CvEntry extends Base {
+  section: CvSection;
+  title: string;
+  organization: string | null;
+  location: string | null;
+  /** YYYY-MM-DD; the page asks for month and year. */
+  start_date: string;
+  /** null = bis heute */
+  end_date: string | null;
+  description: string | null;
+  /** Left out of the files. */
+  hidden: boolean;
+}
+
 export interface Tables {
   events: StudyEvent;
   todos: Todo;
@@ -276,6 +318,8 @@ export interface Tables {
   contracts: Contract;
   event_links: EventLink;
   batzi_events: BatziEvent;
+  cv_profile: CvProfile;
+  cv_entries: CvEntry;
 }
 
 export type TableName = keyof Tables;
