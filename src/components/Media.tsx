@@ -51,7 +51,7 @@ export function Video({ url }: { url: string }) {
     return <video src={url} controls className="w-full rounded-lg" />;
   }
   return (
-    <a href={url} target="_blank" rel="noreferrer" className="text-sm text-teal-700 underline dark:text-teal-400">
+    <a href={url} target="_blank" rel="noreferrer" className="text-sm text-brand-700 underline dark:text-brand-400">
       ▶ Video/Quelle öffnen
     </a>
   );
@@ -66,7 +66,7 @@ export function QuestionImage({ url }: { url: string }) {
   const stored = useFigureImage(isStoredImage(url) ? url : undefined);
   const src = isStoredImage(url) ? stored.url : url;
   if (stored.error) return <p className="text-sm text-rose-700">Bild konnte nicht geladen werden: {stored.error}</p>;
-  if (!src) return <div className="h-48 w-full max-w-md animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800" />;
+  if (!src) return <div className="h-48 w-full max-w-md animate-pulse rounded-lg bg-stone-100 dark:bg-stone-800" />;
   // eslint-disable-next-line @next/next/no-img-element -- user-provided URLs from any host and signed storage URLs
-  return <img src={src} alt="Abbildung zur Frage" className="max-h-96 w-auto rounded-lg border border-slate-200 dark:border-slate-800" />;
+  return <img src={src} alt="Abbildung zur Frage" className="max-h-96 w-auto rounded-lg border border-stone-200 dark:border-stone-800" />;
 }

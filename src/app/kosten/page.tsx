@@ -174,11 +174,11 @@ export default function KostenPage() {
           </Field>
 
           <div className="sm:col-span-6">
-            <label className="flex cursor-pointer items-center gap-3 rounded-lg border-2 border-dashed border-slate-300 px-4 py-3 text-sm hover:border-teal-600 hover:bg-teal-50 dark:border-slate-700 dark:hover:bg-teal-950">
+            <label className="flex cursor-pointer items-center gap-3 rounded-lg border-2 border-dashed border-stone-300 px-4 py-3 text-sm hover:border-brand-600 hover:bg-brand-50 dark:border-stone-700 dark:hover:bg-brand-950">
               <span className="text-2xl">🧾</span>
               <span>
                 <span className="block font-medium">{file ? file.name : "Beleg fotografieren oder Datei wählen"}</span>
-                <span className="text-slate-500">
+                <span className="text-stone-500">
                   {file
                     ? "Wird beim Speichern hochgeladen. Tippen zum Ändern."
                     : editing?.receipt && !dropReceipt
@@ -195,7 +195,7 @@ export default function KostenPage() {
               />
             </label>
             {editing?.receipt && !file && (
-              <label className="mt-2 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+              <label className="mt-2 flex items-center gap-2 text-sm text-stone-600 dark:text-stone-300">
                 <input type="checkbox" checked={dropReceipt} onChange={(e) => setDropReceipt(e.target.checked)} />
                 Beleg entfernen
               </label>
@@ -211,7 +211,7 @@ export default function KostenPage() {
                 Abbrechen
               </Button>
             )}
-            {busy && <span className="text-sm text-slate-500">{busy}</span>}
+            {busy && <span className="text-sm text-stone-500">{busy}</span>}
           </div>
         </form>
       </Card>
@@ -219,9 +219,9 @@ export default function KostenPage() {
       <Card className="mb-4">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <div>
-            <p className="text-sm text-slate-500">Summe {year}</p>
+            <p className="text-sm text-stone-500">Summe {year}</p>
             <p className="text-3xl font-semibold tabular-nums">{euro.format(total)}</p>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-stone-500">
               {rows.length} {rows.length === 1 ? "Ausgabe" : "Ausgaben"}
               {missing > 0 && <span className="text-amber-700 dark:text-amber-400"> · {missing} ohne Beleg</span>}
             </p>
@@ -250,7 +250,7 @@ export default function KostenPage() {
             ))}
           </div>
         )}
-        <p className="mt-4 text-xs text-slate-500">
+        <p className="mt-4 text-xs text-stone-500">
           Hinweis: Kosten eines Erststudiums zählen meist als Sonderausgaben (bis 6.000 € pro Jahr) und gehören in die Anlage
           Sonderausgaben. Das ist keine Steuerberatung; im Zweifel bei einem Lohnsteuerhilfeverein nachfragen.
         </p>
@@ -260,10 +260,10 @@ export default function KostenPage() {
       <div className="space-y-2">
         {rows.map((e) => (
           <Card key={e.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 py-3">
-            <span className="w-20 text-sm tabular-nums text-slate-500">{formatDate(e.date)}</span>
+            <span className="w-20 text-sm tabular-nums text-stone-500">{formatDate(e.date)}</span>
             <div className="min-w-0 flex-1">
               <p className="truncate font-medium">{e.title}</p>
-              <p className="truncate text-xs text-slate-500">
+              <p className="truncate text-xs text-stone-500">
                 {e.category}
                 {e.note && ` · ${e.note}`}
               </p>

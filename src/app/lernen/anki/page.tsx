@@ -108,11 +108,11 @@ export default function AnkiPage() {
 
       <Card className="mb-4 space-y-4">
         <h2 className="font-medium">Anki-Stapel importieren</h2>
-        <label className="flex cursor-pointer items-center gap-3 rounded-lg border-2 border-dashed border-slate-300 px-4 py-4 text-sm hover:border-teal-600 hover:bg-teal-50 dark:border-slate-700 dark:hover:bg-teal-950">
+        <label className="flex cursor-pointer items-center gap-3 rounded-lg border-2 border-dashed border-stone-300 px-4 py-4 text-sm hover:border-brand-600 hover:bg-brand-50 dark:border-stone-700 dark:hover:bg-brand-950">
           <span className="text-3xl">🃏</span>
           <span>
             <span className="block font-medium">{pkg ? pkg.fileName : ".apkg-Datei wählen"}</span>
-            <span className="text-slate-500">
+            <span className="text-stone-500">
               In Anki: Stapel → Exportieren → „Anki Deck Package (.apkg)“. Alles wird hier im Browser gelesen.
             </span>
           </span>
@@ -123,29 +123,29 @@ export default function AnkiPage() {
           <div className="space-y-4">
             <p className="text-sm">
               <strong>{count(fresh.length, "neue Frage", "neue Fragen")}</strong>
-              {pkg.cards.length > fresh.length && <span className="text-slate-500"> ({pkg.cards.length - fresh.length} schon importiert)</span>}
+              {pkg.cards.length > fresh.length && <span className="text-stone-500"> ({pkg.cards.length - fresh.length} schon importiert)</span>}
               {pkg.skipped.occlusion > 0 && (
-                <span className="text-slate-500">
+                <span className="text-stone-500">
                   {" "}
                   · {count(pkg.skipped.occlusion, "Bildverdeckungs-Karte", "Bildverdeckungs-Karten")} übersprungen (dafür die Seite Abbildungen nutzen)
                 </span>
               )}
-              {pkg.skipped.empty > 0 && <span className="text-slate-500"> · {pkg.skipped.empty} ohne Rückseite übersprungen</span>}
+              {pkg.skipped.empty > 0 && <span className="text-stone-500"> · {pkg.skipped.empty} ohne Rückseite übersprungen</span>}
             </p>
             {decks.length > 0 && (
-              <ul className="max-h-48 space-y-1 overflow-auto rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-800/50">
+              <ul className="max-h-48 space-y-1 overflow-auto rounded-lg bg-stone-50 p-3 text-sm dark:bg-stone-800/50">
                 {decks.map(([deck, n]) => (
                   <li key={deck} className="flex justify-between gap-3">
                     <span className="truncate">{deck}</span>
-                    <span className="tabular-nums text-slate-500">{n}</span>
+                    <span className="tabular-nums text-stone-500">{n}</span>
                   </li>
                 ))}
               </ul>
             )}
             {fresh.slice(0, 3).map((c) => (
-              <div key={c.key} className="rounded-lg border border-slate-200 p-3 text-sm dark:border-slate-800">
+              <div key={c.key} className="rounded-lg border border-stone-200 p-3 text-sm dark:border-stone-800">
                 <p className="whitespace-pre-wrap font-medium">{c.prompt}</p>
-                <p className="mt-1 whitespace-pre-wrap text-slate-600 dark:text-slate-300">→ {c.answer}</p>
+                <p className="mt-1 whitespace-pre-wrap text-stone-600 dark:text-stone-300">→ {c.answer}</p>
               </div>
             ))}
             <div className="grid gap-3 sm:grid-cols-2">
@@ -166,7 +166,7 @@ export default function AnkiPage() {
                 </label>
               )}
             </div>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-stone-500">
               Die Unterstapel werden zu Themen. Karten kommen als Erklär-Fragen und starten neu; der Lernstand aus Anki wird nicht übernommen.
               Lückentexte werden zu einer Frage pro Lücke.
             </p>
@@ -175,7 +175,7 @@ export default function AnkiPage() {
             </Button>
           </div>
         )}
-        {busy && <p className="text-sm text-slate-500">{busy}</p>}
+        {busy && <p className="text-sm text-stone-500">{busy}</p>}
       </Card>
 
       <Card className="space-y-4">
@@ -195,7 +195,7 @@ export default function AnkiPage() {
             Textdatei für Anki herunterladen
           </Button>
         </div>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-stone-500">
           In Anki: Datei → Importieren → die Datei wählen, als Notiztyp „Einfach“ (Basic) lassen und importieren. Die Stapel „Studium MHH::Fach::Thema“ legt
           Anki selbst an. Abbildungsfragen bleiben hier, weil Anki die Markierungen nicht kennt.
         </p>

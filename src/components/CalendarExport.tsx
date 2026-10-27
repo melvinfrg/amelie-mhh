@@ -77,19 +77,19 @@ export function CalendarExport() {
   const chip = (active: boolean) =>
     `rounded-full border px-3 py-1 text-sm transition ${
       active
-        ? "border-teal-700 bg-teal-700 text-white"
-        : "border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+        ? "border-brand-700 bg-brand-700 text-white"
+        : "border-stone-300 text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
     }`;
 
   return (
     <Card className="space-y-4">
       <div>
         <h2 className="font-medium">In anderen Kalender übernehmen</h2>
-        <p className="text-sm text-slate-500">Für Apple Kalender, Supershift, Google Kalender oder Outlook. Ohne Auswahl wird alles übernommen.</p>
+        <p className="text-sm text-stone-500">Für Apple Kalender, Supershift, Google Kalender oder Outlook. Ohne Auswahl wird alles übernommen.</p>
       </div>
 
       <div className="space-y-2">
-        <p className="text-xs font-medium text-slate-500">Art</p>
+        <p className="text-xs font-medium text-stone-500">Art</p>
         <div className="flex flex-wrap gap-2">
           {KINDS.map((k) => (
             <button key={k} className={chip(Boolean(filter.kinds?.includes(k)))} onClick={() => setFilter({ ...filter, kinds: toggle(filter.kinds, k) })}>
@@ -101,7 +101,7 @@ export function CalendarExport() {
 
       {subjects.rows.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs font-medium text-slate-500">Fach</p>
+          <p className="text-xs font-medium text-stone-500">Fach</p>
           <div className="flex flex-wrap gap-2">
             {subjects.rows.map((s) => (
               <button
@@ -126,7 +126,7 @@ export function CalendarExport() {
 
       <div className="flex flex-wrap items-end gap-2">
         <label className="text-sm">
-          <span className="mb-1 block text-xs font-medium text-slate-500">Name im Kalender</span>
+          <span className="mb-1 block text-xs font-medium text-stone-500">Name im Kalender</span>
           <TextInput className="w-56" value={name} onChange={(e) => setName(e.target.value)} />
         </label>
         <Button variant="secondary" onClick={downloadFile} disabled={!matching.length}>
@@ -135,7 +135,7 @@ export function CalendarExport() {
         {hasSupabase && <Button onClick={createFeed}>Abo-Link erstellen</Button>}
       </div>
 
-      <details className="text-sm text-slate-600 dark:text-slate-300">
+      <details className="text-sm text-stone-600 dark:text-stone-300">
         <summary className="cursor-pointer font-medium">Datei oder Abo – was ist der Unterschied?</summary>
         <div className="mt-2 space-y-2">
           <p>
@@ -154,15 +154,15 @@ export function CalendarExport() {
 
       {feeds.rows.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs font-medium text-slate-500">Abo-Links</p>
+          <p className="text-xs font-medium text-stone-500">Abo-Links</p>
           {feeds.rows.map((feed) => {
             const url = feedUrl(feed);
             return (
-              <div key={feed.id} className="rounded-lg border border-slate-200 p-3 dark:border-slate-800">
+              <div key={feed.id} className="rounded-lg border border-stone-200 p-3 dark:border-stone-800">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="min-w-0">
                     <p className="font-medium">{feed.name}</p>
-                    <p className="text-xs text-slate-500">{describe(feed.filter ?? {}, subjectName)}</p>
+                    <p className="text-xs text-stone-500">{describe(feed.filter ?? {}, subjectName)}</p>
                   </div>
                   <div className="flex flex-wrap gap-1">
                     <Button variant="ghost" onClick={() => setShown(shown === feed.id ? null : feed.id)}>
@@ -180,11 +180,11 @@ export function CalendarExport() {
                 </div>
                 {shown === feed.id && (
                   <div className="mt-3 space-y-2">
-                    <code className="block break-all rounded bg-slate-100 px-2 py-1 text-xs dark:bg-slate-800">{url}</code>
+                    <code className="block break-all rounded bg-stone-100 px-2 py-1 text-xs dark:bg-stone-800">{url}</code>
                     <div className="flex flex-wrap gap-2">
                       <a
                         href={url.replace(/^https?:/, "webcal:")}
-                        className="inline-flex items-center rounded-lg bg-teal-700 px-3 py-2 text-sm font-medium text-white hover:bg-teal-800"
+                        className="inline-flex items-center rounded-lg bg-brand-700 px-3 py-2 text-sm font-medium text-white hover:bg-brand-800"
                       >
                         In Apple Kalender öffnen
                       </a>
@@ -197,7 +197,7 @@ export function CalendarExport() {
           })}
         </div>
       )}
-      {!hasSupabase && <p className="text-xs text-slate-500">Abo-Links gibt es nur mit Konto, im Demo-Modus nur die Datei.</p>}
+      {!hasSupabase && <p className="text-xs text-stone-500">Abo-Links gibt es nur mit Konto, im Demo-Modus nur die Datei.</p>}
     </Card>
   );
 }

@@ -40,33 +40,33 @@ export default function Home() {
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="md:col-span-1">
-          <p className="text-xs uppercase tracking-wide text-slate-500">Nächste Prüfung</p>
+          <p className="text-xs uppercase tracking-wide text-stone-500">Nächste Prüfung</p>
           {nextExam ? (
             <>
-              <p className="mt-2 text-3xl font-semibold text-teal-800 dark:text-teal-300">{eventCountdown(nextExam)}</p>
+              <p className="mt-2 text-3xl font-semibold text-brand-800 dark:text-brand-300">{eventCountdown(nextExam)}</p>
               <p className="mt-1 font-medium">{nextExam.title}</p>
-              <p className="text-sm text-slate-500">{formatEventDate(nextExam)}</p>
-              <p className="mt-2 text-xs text-slate-500">Vorbereitung: {nextExam.progress}%</p>
+              <p className="text-sm text-stone-500">{formatEventDate(nextExam)}</p>
+              <p className="mt-2 text-xs text-stone-500">Vorbereitung: {nextExam.progress}%</p>
             </>
           ) : (
-            <p className="mt-2 text-sm text-slate-500">Keine Prüfung eingetragen.</p>
+            <p className="mt-2 text-sm text-stone-500">Keine Prüfung eingetragen.</p>
           )}
         </Card>
 
         <Card className="md:col-span-2">
-          <p className="text-xs uppercase tracking-wide text-slate-500">Heute lernen</p>
+          <p className="text-xs uppercase tracking-wide text-stone-500">Heute lernen</p>
           <div className="mt-2 flex flex-wrap items-end gap-6">
             <div>
               <p className="text-3xl font-semibold tabular-nums">{due}</p>
-              <p className="text-sm text-slate-500">fällige Wiederholungen</p>
+              <p className="text-sm text-stone-500">fällige Wiederholungen</p>
             </div>
             <div>
               <p className="text-3xl font-semibold tabular-nums">{queue.length - due}</p>
-              <p className="text-sm text-slate-500">neue Fragen</p>
+              <p className="text-sm text-stone-500">neue Fragen</p>
             </div>
             <div>
               <p className="text-3xl font-semibold tabular-nums">🔥 {streak(reviews.rows)}</p>
-              <p className="text-sm text-slate-500">Tage in Folge</p>
+              <p className="text-sm text-stone-500">Tage in Folge</p>
             </div>
             <Link href="/lernen/ueben" className="ml-auto">
               <Button disabled={queue.length === 0}>▶ Jetzt üben</Button>
@@ -77,19 +77,19 @@ export default function Home() {
         <Card className="md:col-span-2">
           <div className="mb-2 flex items-center justify-between">
             <h2 className="font-medium">Anstehende Termine</h2>
-            <Link href="/termine" className="text-sm text-teal-700 hover:underline dark:text-teal-400">
+            <Link href="/termine" className="text-sm text-brand-700 hover:underline dark:text-brand-400">
               Alle →
             </Link>
           </div>
           {upcoming.length === 0 ? (
             <Empty>Keine anstehenden Termine.</Empty>
           ) : (
-            <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+            <ul className="divide-y divide-stone-100 dark:divide-stone-800">
               {upcoming.map((e) => (
                 <li key={e.id} className="flex items-center justify-between gap-3 py-2 text-sm">
                   <div className="min-w-0">
                     <p className="truncate font-medium">{e.title}</p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-stone-500">
                       {KIND_LABEL[e.kind]} · {formatEventDate(e)}
                     </p>
                   </div>
@@ -102,8 +102,8 @@ export default function Home() {
 
         <Card>
           <div className="mb-2 flex items-center justify-between">
-            <h2 className="font-medium">To-dos</h2>
-            <Link href="/todos" className="text-sm text-teal-700 hover:underline dark:text-teal-400">
+            <h2 className="font-medium">ToDos</h2>
+            <Link href="/todos" className="text-sm text-brand-700 hover:underline dark:text-brand-400">
               Alle →
             </Link>
           </div>
@@ -115,13 +115,13 @@ export default function Home() {
                 <li key={t.id} className="flex items-center gap-2">
                   <input
                     type="checkbox"
-                    className="h-4 w-4 accent-teal-700"
+                    className="h-4 w-4 accent-brand-700"
                     onChange={() => todos.update(t.id, { done: true })}
                     aria-label={`${t.title} erledigt`}
                   />
                   <span className="flex-1 truncate">{t.title}</span>
                   {t.due_date && (
-                    <span className={`text-xs ${daysUntil(t.due_date) < 0 ? "text-rose-600" : "text-slate-500"}`}>
+                    <span className={`text-xs ${daysUntil(t.due_date) < 0 ? "text-rose-600" : "text-stone-500"}`}>
                       {countdown(t.due_date)}
                     </span>
                   )}

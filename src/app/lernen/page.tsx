@@ -71,16 +71,16 @@ export default function LernenPage() {
             <Card key={subject.id}>
               <div className="flex flex-wrap items-center gap-3">
                 <button className="flex min-w-0 flex-1 items-center gap-2 text-left" onClick={() => setOpen(isOpen ? null : subject.id)}>
-                  <span className="text-slate-400">{isOpen ? "▾" : "▸"}</span>
+                  <span className="text-stone-400">{isOpen ? "▾" : "▸"}</span>
                   <SubjectDot color={subject.color} />
                   <span className="font-medium">{subject.name}</span>
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs text-stone-500">
                     {ids.size} Themen · {c.total} Fragen
                   </span>
                 </button>
                 <div className="w-32">
                   <ProgressBar value={c.mastered} color="bg-emerald-600" />
-                  <p className="mt-0.5 text-right text-xs text-slate-500">{Math.round(c.mastered * 100)}% sicher</p>
+                  <p className="mt-0.5 text-right text-xs text-stone-500">{Math.round(c.mastered * 100)}% sicher</p>
                 </div>
                 <Link href={`/lernen/ueben?fach=${subject.id}`}>
                   <Button variant="secondary" disabled={c.due + c.fresh === 0}>
@@ -200,28 +200,28 @@ function TopicTree({
       const unlocked = isUnlocked(topics.rows, questions, settings, topic.id);
       return (
         <li key={topic.id}>
-          <div className="group flex flex-wrap items-center gap-2 rounded-lg py-1.5 pr-2 hover:bg-slate-50 dark:hover:bg-slate-800/50" style={{ paddingLeft: level * 20 + 8 }}>
-            <span className="text-slate-400">{level === 0 ? "■" : "└"}</span>
-            <span className={unlocked ? "" : "text-slate-400"}>
+          <div className="group flex flex-wrap items-center gap-2 rounded-lg py-1.5 pr-2 hover:bg-stone-50 dark:hover:bg-stone-800/50" style={{ paddingLeft: level * 20 + 8 }}>
+            <span className="text-stone-400">{level === 0 ? "■" : "└"}</span>
+            <span className={unlocked ? "" : "text-stone-400"}>
               {!unlocked && "🔒 "}
               {topic.name}
             </span>
-            <span className="text-xs text-slate-500">
+            <span className="text-xs text-stone-500">
               {c.total} Fragen
               {own !== null && ` · ${Math.round(own * 100)}% sicher`}
             </span>
             <div className="ml-auto flex items-center gap-1">
-              <Link href={`/lernen/ueben?thema=${topic.id}`} className="text-xs text-teal-700 hover:underline dark:text-teal-400">
+              <Link href={`/lernen/ueben?thema=${topic.id}`} className="text-xs text-brand-700 hover:underline dark:text-brand-400">
                 {c.due + c.fresh > 0 ? `Üben (${c.due + c.fresh})` : ""}
               </Link>
-              <Link href={`/lernen/fragen?thema=${topic.id}`} className="px-1 text-xs text-slate-500 hover:underline">
+              <Link href={`/lernen/fragen?thema=${topic.id}`} className="px-1 text-xs text-stone-500 hover:underline">
                 Fragen
               </Link>
-              <button className="px-1 text-xs text-slate-500 hover:underline" onClick={() => setAdding(topic.id)}>
+              <button className="px-1 text-xs text-stone-500 hover:underline" onClick={() => setAdding(topic.id)}>
                 + Unterthema
               </button>
               <button
-                className="px-1 text-xs text-slate-500 hover:underline"
+                className="px-1 text-xs text-stone-500 hover:underline"
                 onClick={() => {
                   const next = prompt("Neuer Name", topic.name);
                   if (next?.trim()) topics.update(topic.id, { name: next.trim() });
@@ -243,7 +243,7 @@ function TopicTree({
 
   const roots = childrenOf(topics.rows, null, subject.id);
   return (
-    <div className="mt-3 border-t border-slate-100 pt-3 dark:border-slate-800">
+    <div className="mt-3 border-t border-stone-100 pt-3 dark:border-stone-800">
       {roots.length === 0 && <Empty>Noch keine Themen. Beginne mit den groben Bereichen, z. B. „Obere Extremität“.</Empty>}
       <ul className="text-sm">{render(null, 0)}</ul>
       {adding === null ? (
@@ -259,7 +259,7 @@ function TopicTree({
         </div>
       )}
       {settings.gating_enabled && (
-        <p className="mt-2 text-xs text-slate-500">
+        <p className="mt-2 text-xs text-stone-500">
           🔒 Unterthemen öffnen sich, sobald {Math.round(settings.unlock_threshold * 100)}% der Fragen des übergeordneten Themas sicher sitzen.
         </p>
       )}

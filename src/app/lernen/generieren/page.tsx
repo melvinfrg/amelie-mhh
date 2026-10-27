@@ -207,7 +207,7 @@ export default function GenerierenPage() {
 
         {mode === "api" && (
           <div>
-            <p className="mb-1 text-sm font-medium text-slate-700 dark:text-slate-300">Material</p>
+            <p className="mb-1 text-sm font-medium text-stone-700 dark:text-stone-300">Material</p>
             <div className="mb-3 flex gap-1">
               {(Object.keys(SOURCE_LABEL) as SourceKind[]).map((k) => (
                 <Button key={k} type="button" variant={kind === k ? "primary" : "secondary"} onClick={() => setKind(k)}>
@@ -248,7 +248,7 @@ export default function GenerierenPage() {
                     />
                   </div>
                 )}
-                <p className="text-xs text-slate-500">Die KI sieht auch Abbildungen auf den Folien. Pro Durchgang höchstens etwa 3 MB.</p>
+                <p className="text-xs text-stone-500">Die KI sieht auch Abbildungen auf den Folien. Pro Durchgang höchstens etwa 3 MB.</p>
               </div>
             )}
             {kind === "text" && (
@@ -271,17 +271,17 @@ export default function GenerierenPage() {
               max={30}
               value={count}
               onChange={(e) => setCount(Number(e.target.value))}
-              className="w-full accent-teal-700"
+              className="w-full accent-brand-700"
             />
           </Field>
           <div className="text-sm">
-            <p className="mb-1 font-medium text-slate-700 dark:text-slate-300">Fragetypen</p>
+            <p className="mb-1 font-medium text-stone-700 dark:text-stone-300">Fragetypen</p>
             <label className="mr-4 inline-flex items-center gap-1.5">
               <input
                 type="checkbox"
                 checked={types.mc}
                 onChange={(e) => setTypes({ ...types, mc: e.target.checked })}
-                className="accent-teal-700"
+                className="accent-brand-700"
               />
               Multiple Choice
             </label>
@@ -290,7 +290,7 @@ export default function GenerierenPage() {
                 type="checkbox"
                 checked={types.explain}
                 onChange={(e) => setTypes({ ...types, explain: e.target.checked })}
-                className="accent-teal-700"
+                className="accent-brand-700"
               />
               Erklären
             </label>
@@ -305,13 +305,13 @@ export default function GenerierenPage() {
             <li>
               <div className="flex flex-wrap items-center gap-2">
                 <Button onClick={copyPrompt}>{copied === prompt ? "✓ Prompt kopiert" : "Prompt kopieren"}</Button>
-                <a href="https://claude.ai/new" target="_blank" rel="noreferrer" className="text-teal-700 underline dark:text-teal-400">
+                <a href="https://claude.ai/new" target="_blank" rel="noreferrer" className="text-brand-700 underline dark:text-brand-400">
                   claude.ai öffnen ↗
                 </a>
               </div>
-              <details className="mt-2 text-slate-500">
+              <details className="mt-2 text-stone-500">
                 <summary className="cursor-pointer">Prompt anzeigen</summary>
-                <pre className="mt-2 whitespace-pre-wrap rounded-lg bg-slate-50 p-3 text-xs dark:bg-slate-900">{prompt}</pre>
+                <pre className="mt-2 whitespace-pre-wrap rounded-lg bg-stone-50 p-3 text-xs dark:bg-stone-900">{prompt}</pre>
               </details>
             </li>
             <li>
@@ -369,7 +369,7 @@ export default function GenerierenPage() {
           </div>
           {drafts.map((d) => (
             <Card key={d.key}>
-              <p className="mb-1 text-xs text-slate-500">
+              <p className="mb-1 text-xs text-stone-500">
                 {d.type === "mc" ? "Multiple Choice" : "Erklären"}
                 {d.location && ` · ${d.location}`}
               </p>
@@ -410,7 +410,7 @@ export default function GenerierenPage() {
                         <li
                           key={i}
                           className={
-                            o.correct ? "font-medium text-emerald-700 dark:text-emerald-400" : "text-slate-600 dark:text-slate-300"
+                            o.correct ? "font-medium text-emerald-700 dark:text-emerald-400" : "text-stone-600 dark:text-stone-300"
                           }
                         >
                           {o.correct ? "✓" : "–"} {o.text}
@@ -420,7 +420,7 @@ export default function GenerierenPage() {
                   ) : (
                     <p className="mt-2 whitespace-pre-wrap rounded-lg bg-emerald-50 p-2 text-sm dark:bg-emerald-950">{d.answer}</p>
                   )}
-                  {d.explanation && <p className="mt-2 whitespace-pre-wrap text-sm text-slate-500">{d.explanation}</p>}
+                  {d.explanation && <p className="mt-2 whitespace-pre-wrap text-sm text-stone-500">{d.explanation}</p>}
                 </>
               )}
               <div className="mt-3 flex justify-end gap-1">

@@ -66,7 +66,7 @@ export default function StatistikPage() {
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
         {kpis.map((k) => (
           <Card key={k.label}>
-            <p className="text-xs text-slate-500">{k.label}</p>
+            <p className="text-xs text-stone-500">{k.label}</p>
             <p className="mt-1 text-2xl font-semibold tabular-nums">{k.value}</p>
           </Card>
         ))}
@@ -84,15 +84,15 @@ export default function StatistikPage() {
                 title={`${new Date(d.day).toLocaleDateString("de-DE")}: ${d.total} Wiederholungen, ${d.correct} richtig`}
               >
                 <div className="w-full rounded-t-sm bg-rose-300 dark:bg-rose-800" style={{ height: `${((d.total - d.correct) / maxPerDay) * 100}%` }} />
-                <div className="w-full bg-teal-600" style={{ height: `${(d.correct / maxPerDay) * 100}%` }} />
+                <div className="w-full bg-brand-600" style={{ height: `${(d.correct / maxPerDay) * 100}%` }} />
               </div>
             ))}
           </div>
-          <div className="mt-2 flex justify-between text-xs text-slate-500">
+          <div className="mt-2 flex justify-between text-xs text-stone-500">
             <span>vor 30 Tagen</span>
             <span className="flex gap-3">
               <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-sm bg-teal-600" /> richtig
+                <span className="h-2 w-2 rounded-sm bg-brand-600" /> richtig
               </span>
               <span className="flex items-center gap-1">
                 <span className="h-2 w-2 rounded-sm bg-rose-300 dark:bg-rose-800" /> falsch
@@ -107,7 +107,7 @@ export default function StatistikPage() {
           <ul className="space-y-1.5 text-sm">
             {forecast.map((f) => (
               <li key={f.key} className="flex items-center gap-2">
-                <span className="w-12 text-slate-500">{f.label}</span>
+                <span className="w-12 text-stone-500">{f.label}</span>
                 <div className="flex-1">
                   <ProgressBar value={f.count / maxForecast} />
                 </div>
@@ -115,14 +115,14 @@ export default function StatistikPage() {
               </li>
             ))}
           </ul>
-          <p className="mt-2 text-xs text-slate-500">* inklusive Fragen, die im Lauf des Tages wieder fällig werden</p>
+          <p className="mt-2 text-xs text-stone-500">* inklusive Fragen, die im Lauf des Tages wieder fällig werden</p>
         </Card>
       </div>
 
       <Card className="mt-4">
         <h2 className="mb-3 font-medium">Nach Fach</h2>
         {subjects.rows.length === 0 && <Empty>Noch keine Fächer.</Empty>}
-        <div className="divide-y divide-slate-100 dark:divide-slate-800">
+        <div className="divide-y divide-stone-100 dark:divide-stone-800">
           {[...subjects.rows]
             .sort((a, b) => a.name.localeCompare(b.name))
             .map((s) => {
@@ -138,7 +138,7 @@ export default function StatistikPage() {
                   <div className="order-last col-span-2 sm:order-none sm:col-span-1">
                     <ProgressBar value={mastered} color="bg-emerald-600" />
                   </div>
-                  <span className="text-slate-500 sm:text-right">{qs.length} Fragen</span>
+                  <span className="text-stone-500 sm:text-right">{qs.length} Fragen</span>
                   <span className="text-right tabular-nums">{pct(accuracy(rs))} richtig</span>
                 </div>
               );

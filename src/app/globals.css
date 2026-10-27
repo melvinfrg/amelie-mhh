@@ -1,5 +1,69 @@
 @import "tailwindcss";
 
+/*
+ * One look for all areas: warm stone greys, rounded cards and the Batzi's fonts (Fredoka for headings, Nunito for text).
+ * Each area has its own accent colour, used as `brand-*` in class names: the start page coral, Melvin indigo,
+ * Amelie's Studium teal. Shell sets data-area on the page, so shared components take the colour of the area they are in.
+ */
+@theme inline {
+  --font-sans: var(--font-nunito), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: var(--font-fredoka), var(--font-nunito), ui-rounded, system-ui, sans-serif;
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  --color-brand-950: var(--brand-950);
+}
+
+:root,
+[data-area="studium"] {
+  --brand-50: oklch(98.4% 0.014 180.72);
+  --brand-100: oklch(95.3% 0.051 180.801);
+  --brand-200: oklch(91% 0.096 180.426);
+  --brand-300: oklch(85.5% 0.138 181.071);
+  --brand-400: oklch(77.7% 0.152 181.912);
+  --brand-500: oklch(70.4% 0.14 182.503);
+  --brand-600: oklch(60% 0.118 184.704);
+  --brand-700: oklch(51.1% 0.096 186.391);
+  --brand-800: oklch(43.7% 0.078 188.216);
+  --brand-900: oklch(38.6% 0.063 188.416);
+  --brand-950: oklch(27.7% 0.046 192.524);
+}
+
+[data-area="melvin"] {
+  --brand-50: oklch(96.2% 0.018 272.314);
+  --brand-100: oklch(93% 0.034 272.788);
+  --brand-200: oklch(87% 0.065 274.039);
+  --brand-300: oklch(78.5% 0.115 274.713);
+  --brand-400: oklch(67.3% 0.182 276.935);
+  --brand-500: oklch(58.5% 0.233 277.117);
+  --brand-600: oklch(51.1% 0.262 276.966);
+  --brand-700: oklch(45.7% 0.24 277.023);
+  --brand-800: oklch(39.8% 0.195 277.366);
+  --brand-900: oklch(35.9% 0.144 278.697);
+  --brand-950: oklch(25.7% 0.09 281.288);
+}
+
+/* The start page borrows the coral of the Batzi's. */
+[data-area="portal"] {
+  --brand-50: oklch(97.6% 0.016 35);
+  --brand-100: oklch(94.6% 0.035 35);
+  --brand-200: oklch(89.5% 0.07 33);
+  --brand-300: oklch(82% 0.115 32);
+  --brand-400: oklch(74% 0.16 31);
+  --brand-500: oklch(69% 0.18 30);
+  --brand-600: oklch(62% 0.19 30);
+  --brand-700: oklch(54% 0.17 30);
+  --brand-800: oklch(46% 0.14 30);
+  --brand-900: oklch(39% 0.11 30);
+  --brand-950: oklch(26% 0.07 30);
+}
 
 @media (prefers-color-scheme: dark) {
   html {
@@ -8,6 +72,34 @@
 }
 
 body {
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+  @apply bg-stone-50 font-sans text-stone-900 dark:bg-stone-950 dark:text-stone-100;
+}
+
+h1,
+h2,
+h3 {
+  @apply font-display;
+}
+
+/* The soft, warm shadow of the Batzi's cards. */
+@utility shadow-soft {
+  box-shadow:
+    0 1px 0 rgb(120 70 50 / 0.03),
+    0 10px 30px -18px rgb(120 80 60 / 0.35);
+}
+
+/* Warm paper background with a glow in the area's colour, like the Batzi's. */
+[data-area] {
+  background-color: oklch(98.7% 0.006 70);
+  background-image:
+    radial-gradient(circle at 0% -10%, color-mix(in oklch, var(--brand-100) 70%, transparent) 0, transparent 38%),
+    radial-gradient(circle at 110% 5%, oklch(95% 0.02 320 / 0.5) 0, transparent 32%);
+  background-attachment: fixed;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-area] {
+    background-color: oklch(17% 0.006 50);
+    background-image: radial-gradient(circle at 0% -10%, color-mix(in oklch, var(--brand-950) 70%, transparent) 0, transparent 40%);
+  }
 }

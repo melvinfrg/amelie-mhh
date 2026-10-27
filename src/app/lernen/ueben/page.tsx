@@ -133,7 +133,7 @@ function Session() {
         }
       />
       {queue && (
-        <div className="mb-4 flex items-center gap-3 text-sm text-slate-500">
+        <div className="mb-4 flex items-center gap-3 text-sm text-stone-500">
           <span>{done.count} beantwortet</span>
           {done.count > 0 && <span>· {Math.round((done.correct / done.count) * 100)}% richtig</span>}
           <span className="ml-auto">{queue.length} übrig</span>
@@ -147,7 +147,7 @@ function Session() {
           <Card className="text-center">
             <p className="text-3xl">🎉</p>
             <p className="mt-2 font-medium">Für heute ist hier alles erledigt.</p>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-stone-500">
               {done.count > 0
                 ? `${done.count} Fragen beantwortet, ${Math.round((done.correct / done.count) * 100)}% richtig.`
                 : "Es sind gerade keine Fragen fällig. Neue Fragen legst du unter „Fragen“ an."}
@@ -219,10 +219,10 @@ function QuestionCard({
 
   return (
     <Card>
-      <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+      <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-stone-500">
         <span>{path}</span>
         {isNew(question) && <span className="rounded bg-sky-100 px-1.5 py-0.5 text-sky-800 dark:bg-sky-950 dark:text-sky-200">neu</span>}
-        <span className="rounded bg-slate-100 px-1.5 py-0.5 dark:bg-slate-800">
+        <span className="rounded bg-stone-100 px-1.5 py-0.5 dark:bg-stone-800">
           {question.type === "mc" ? (multi ? "Mehrfachauswahl" : "Einfachauswahl") : question.type === "occlusion" ? "Abbildung" : "Erklären"}
         </span>
       </div>
@@ -265,14 +265,14 @@ function QuestionCard({
                 ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950"
                 : picked
                   ? "border-rose-500 bg-rose-50 dark:bg-rose-950"
-                  : "border-slate-200 opacity-70 dark:border-slate-800"
+                  : "border-stone-200 opacity-70 dark:border-stone-800"
               : picked
-                ? "border-teal-600 bg-teal-50 dark:bg-teal-950"
-                : "border-slate-200 hover:border-slate-400 dark:border-slate-700";
+                ? "border-brand-600 bg-brand-50 dark:bg-brand-950"
+                : "border-stone-200 hover:border-stone-400 dark:border-stone-700";
             return (
               <li key={i}>
                 <button onClick={() => toggle(i)} className={`flex w-full items-start gap-3 rounded-lg border px-3 py-2 text-left text-sm ${tone}`}>
-                  <span className="font-mono text-slate-400">{String.fromCharCode(65 + i)}</span>
+                  <span className="font-mono text-stone-400">{String.fromCharCode(65 + i)}</span>
                   <span className="flex-1">{o.text}</span>
                   {revealed && o.correct && <span>✓</span>}
                   {revealed && picked && !o.correct && <span>✗</span>}
@@ -330,16 +330,16 @@ function QuestionCard({
             )
           )}
           {question.explanation && (
-            <div className="rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-800">
+            <div className="rounded-lg bg-stone-50 p-3 text-sm dark:bg-stone-800">
               <p className="mb-1 font-medium">Erklärung</p>
               <p className="whitespace-pre-wrap">{question.explanation}</p>
             </div>
           )}
           {question.video_url && <Video url={question.video_url} />}
-          {question.source && <p className="text-xs text-slate-500">Quelle: {question.source}</p>}
+          {question.source && <p className="text-xs text-stone-500">Quelle: {question.source}</p>}
 
           <div>
-            <p className="mb-2 text-sm text-slate-500">
+            <p className="mb-2 text-sm text-stone-500">
               {question.type === "mc" ? "Wie sicher warst du?" : "Wie gut war deine Antwort?"}
             </p>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -370,7 +370,7 @@ function Dictation({ onText }: { onText: (text: string) => void }) {
       <Button type="button" variant={listening ? "danger" : "secondary"} onClick={listening ? stop : start}>
         {listening ? "⏹ Aufnahme beenden" : "🎤 Antwort sprechen"}
       </Button>
-      {listening && <p className="text-sm text-slate-500">{interim ? `… ${interim}` : "Ich höre zu …"}</p>}
+      {listening && <p className="text-sm text-stone-500">{interim ? `… ${interim}` : "Ich höre zu …"}</p>}
       {error && <p className="text-sm text-rose-700 dark:text-rose-400">{error}</p>}
     </div>
   );
@@ -383,7 +383,7 @@ function KeywordCheck({ answer, text }: { answer: string; text: string }) {
   const hits = terms.filter((t) => mentioned(t, text));
   return (
     <div className="mt-3 border-t border-emerald-200 pt-2 dark:border-emerald-900">
-      <p className="mb-1 text-xs text-slate-600 dark:text-slate-300">
+      <p className="mb-1 text-xs text-stone-600 dark:text-stone-300">
         Du hast {hits.length} von {terms.length} Stichworten genannt:
       </p>
       <div className="flex flex-wrap gap-1">
@@ -391,7 +391,7 @@ function KeywordCheck({ answer, text }: { answer: string; text: string }) {
           <span
             key={t}
             className={`rounded px-1.5 py-0.5 text-xs ${
-              hits.includes(t) ? "bg-emerald-600 text-white" : "bg-white text-slate-500 ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700"
+              hits.includes(t) ? "bg-emerald-600 text-white" : "bg-white text-stone-500 ring-1 ring-stone-200 dark:bg-stone-800 dark:ring-stone-700"
             }`}
           >
             {t}

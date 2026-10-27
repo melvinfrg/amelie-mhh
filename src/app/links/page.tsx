@@ -88,17 +88,17 @@ export default function LinksPage() {
       <div className="space-y-6">
         {categories.map((category) => (
           <div key={category}>
-            <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">{category}</h2>
+            <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-stone-500">{category}</h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {links.rows
                 .filter((l) => (l.category || "Allgemein") === category)
                 .map((l) => (
                   <Card key={l.id} className="flex flex-col">
-                    <a href={l.url} target="_blank" rel="noreferrer" className="font-medium text-teal-800 hover:underline dark:text-teal-300">
+                    <a href={l.url} target="_blank" rel="noreferrer" className="font-medium text-brand-800 hover:underline dark:text-brand-300">
                       {l.title} ↗
                     </a>
-                    {l.description && <p className="mt-1 text-sm text-slate-500">{l.description}</p>}
-                    <p className="mt-1 truncate text-xs text-slate-400">{l.url}</p>
+                    {l.description && <p className="mt-1 text-sm text-stone-500">{l.description}</p>}
+                    <p className="mt-1 truncate text-xs text-stone-400">{l.url}</p>
                     <div className="mt-auto flex justify-end gap-1 pt-2">
                       <Button
                         variant="ghost"

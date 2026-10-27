@@ -129,7 +129,7 @@ function Fragen() {
       <ErrorNote error={questions.error} />
       {importing && (
         <Card className="mb-6 space-y-3">
-          <p className="text-sm text-slate-600 dark:text-slate-300">
+          <p className="text-sm text-stone-600 dark:text-stone-300">
             Mehrere Fragen auf einmal einfügen, getrennt durch eine Leerzeile. <code>F:</code> Frage, <code>+</code> richtige und{" "}
             <code>-</code> falsche Antwort, <code>A:</code> Musterlösung, <code>E:</code> Erklärung, <code>V:</code> Video, <code>Q:</code> Quelle.
           </p>
@@ -167,7 +167,7 @@ function Fragen() {
             </Field>
             {editing.draft.type === "mc" ? (
               <div className="space-y-2">
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Antworten (Haken = richtig, mehrere möglich)</p>
+                <p className="text-sm font-medium text-stone-700 dark:text-stone-300">Antworten (Haken = richtig, mehrere möglich)</p>
                 {editing.draft.options.map((o, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <input
@@ -235,7 +235,7 @@ function Fragen() {
               type="checkbox"
               checked={visible.every((q) => selected.has(q.id))}
               onChange={(e) => setSelected(e.target.checked ? new Set(visible.map((q) => q.id)) : new Set())}
-              className="h-5 w-5 accent-teal-700"
+              className="h-5 w-5 accent-brand-700"
             />
             Alle {visible.length} angezeigten auswählen
           </label>
@@ -256,16 +256,16 @@ function Fragen() {
                 type="checkbox"
                 checked={selected.has(q.id)}
                 onChange={() => toggle(q.id)}
-                className="mt-1 h-5 w-5 accent-teal-700"
+                className="mt-1 h-5 w-5 accent-brand-700"
                 aria-label="Frage auswählen"
               />
               <div className="min-w-0 flex-1">
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-stone-500">
                   {topicPath(topics.rows, q.topic_id)} · {TYPE_LABEL[q.type]}
                   {q.suspended && " · pausiert"}
                 </p>
                 <p className="mt-1 line-clamp-2 whitespace-pre-wrap">{q.type === "occlusion" ? `${q.prompt} → ${q.answer}` : q.prompt}</p>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-stone-500">
                   {isNew(q)
                     ? "Neu, noch nicht gelernt"
                     : `${q.card?.reps ?? 0}× wiederholt · ${q.card?.lapses ?? 0}× vergessen · nächste Wiederholung ${formatDate(q.due!)}`}
