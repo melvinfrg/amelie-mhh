@@ -158,6 +158,12 @@ export interface Settings extends Base {
   unlock_threshold: number;
 }
 
+export interface Note extends Base {
+  title: string;
+  body: string;
+  pinned: boolean;
+}
+
 export interface Tables {
   events: StudyEvent;
   todos: Todo;
@@ -170,6 +176,7 @@ export interface Tables {
   expenses: Expense;
   calendar_feeds: CalendarFeed;
   settings: Settings;
+  notes: Note;
 }
 
 export type TableName = keyof Tables;
@@ -186,4 +193,5 @@ export const TABLES: TableName[] = [
   "links",
   "expenses",
   "settings",
+  "notes",
 ];

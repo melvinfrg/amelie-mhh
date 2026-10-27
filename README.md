@@ -1,6 +1,14 @@
-# Studium MHH
+# Amelie & Melvin
 
-Persönliche Studien-Webseite für das Medizinstudium an der MHH: Termine mit Countdown, To-dos, Links und eine Lernplattform mit automatischer Wiederholung.
+Eine Seite, ein Login, drei Bereiche:
+
+- **Studium MHH** (`/studium`, Amelie): Termine mit Countdown, To-dos, Links und eine Lernplattform mit automatischer Wiederholung (Details unten).
+- **Die Batzi's** (`/batzis`, beide): die gemeinsame Alltags-Zentrale (ToDos, Einkauf, Rezepte, Kalender, Tracker, Reisen, Tagebuch, Orga, Fotos). Reines HTML/JS in `public/batzis`, übernommen aus [melvinfrg/die_batzis](https://github.com/melvinfrg/die_batzis). Die Tabellen liegen im selben Supabase-Projekt mit dem Präfix `batzi_` (`supabase/migrations/0005_batzis.sql`); Zugriff hat, wessen E-Mail in `batzi_members` steht. `js/config.js` wird beim Build aus den Umgebungsvariablen erzeugt. Die Kalender-Abos laufen über die Edge Function `batzi-ical` (`supabase/functions/batzi-ical`).
+- **Melvin** (`/melvin`): Startseite mit Notizen und Abkürzungen zu den Batzi's.
+
+**Umzug der alten Batzis-Daten:** `/batzis/umzug.html` öffnen (auf der neuen Seite angemeldet), mit dem alten Batzis-Login anmelden, Personen zuordnen. Die Seite kopiert alle Daten und Fotos; im alten Projekt wird nichts gelöscht, und ein zweiter Durchlauf überspringt, was schon da ist. Jede Person braucht vorher ein Konto auf der neuen Seite.
+
+## Studium MHH
 
 ## Funktionen (Phase 1)
 

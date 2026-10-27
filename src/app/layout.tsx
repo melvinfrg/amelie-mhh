@@ -3,8 +3,8 @@ import { Shell } from "@/components/Shell";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Studium MHH",
-  description: "Termine, To-dos, Links und Lernplattform fürs Medizinstudium",
+  title: "Amelie & Melvin",
+  description: "Studium MHH, Die Batzi's und Melvins Seite unter einem Login",
   manifest: "/manifest.webmanifest",
 };
 
