@@ -96,9 +96,12 @@ async function move(data, emailByOldId) {
   ok(await neu.rpc('batzi_import', { payload: { members: members.map((email) => ({ email })) } }));
   const found = ok(await neu.rpc('batzi_user_ids', { emails: wanted }));
   const idByEmail = Object.fromEntries(found.map((r) => [r.email.toLowerCase(), r.id]));
-  const missing = wanted.filter((e) => !idByEmail[e]);
-  if (missing.length) throw new Error(`Noch kein Konto auf der neuen Seite: ${missing.join(', ')}. Bitte erst registrieren, dann nochmal.`);
-  const newId = Object.fromEntries(Object.entries(emailByOldId).map(([old, email]) => [old, idByEmail[email.toLowerCase()]]));
+  // Wer noch kein Konto hat, bekommt seine Sachen beim ersten Öffnen der Batzi's (batzi_claim).
+  const newId = {}, waiting = {};
+  for (const [old, email] of Object.entries(emailByOldId)) {
+    const id = idByEmail[email.toLowerCase()];
+    if (id) newId[old] = id; else waiting[old] = email.toLowerCase();
+  }
   step('Konten zugeordnet ✓');
 
   // Alte Konto-IDs stecken auch in Feldern wie "Wer?", Packlisten und Foto-Pfaden: einmal überall ersetzen.
@@ -106,10 +109,18 @@ async function move(data, emailByOldId) {
   for (const [o, n] of Object.entries(newId)) json = json.split(o).join(n);
   const payload = JSON.parse(json);
   const known = new Set(Object.values(newId));
+  const owner = (t, r) => (t === 'profiles' ? r.id : r.author_id);
+  const owned = ['profiles', 'diary_entries', 'diary_feelings'];
+  payload.pending = Object.entries(waiting).map(([old, email]) => ({
+    old_id: old,
+    email,
+    payload: Object.fromEntries(owned.map((t) => [t, payload[t].filter((r) => owner(t, r) === old)])),
+  }));
   for (const t of TABLES) {
-    payload[t] = payload[t].filter((r) => !('author_id' in r) || known.has(r.author_id));
+    if (owned.includes(t)) payload[t] = payload[t].filter((r) => known.has(owner(t, r)));
     payload[t].forEach((r) => { if (r.created_by && !known.has(r.created_by)) r.created_by = null; });
   }
+  Object.values(waiting).forEach((e) => step(`${e} hat noch kein Konto: ihre Sachen warten und kommen beim ersten Anmelden automatisch dazu.`));
 
   // Fotos: herunterladen und unter demselben (umgeschriebenen) Pfad wieder hochladen.
   const photos = data.photos.filter((p) => !p.path.startsWith('http'));

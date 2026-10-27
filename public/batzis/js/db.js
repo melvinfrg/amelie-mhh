@@ -26,6 +26,7 @@ if (!isDemo) {
     async updatePassword(password) { ok(await sb.auth.updateUser({ password })); },
     async signOut() { await sb.auth.signOut(); },
     async isMember() { return !!ok(await sb.rpc('batzi_is_member')); },
+    async claim() { return ok(await sb.rpc('batzi_claim')); },
     async list(t) { return ok(await sb.from(T(t)).select('*')); },
     async insert(t, row) { return ok(await sb.from(T(t)).insert(row).select().single()); },
     async update(t, id, patch) { return ok(await sb.from(T(t)).update(patch).eq('id', id).select().single()); },
