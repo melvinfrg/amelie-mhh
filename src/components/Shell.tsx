@@ -39,21 +39,21 @@ export const AREAS = [
     label: "Melvins Zeug",
     icon: <Logo of="melvin" />,
     who: "Finanzen, Termine, Verträge",
-    tone: "from-indigo-100 to-indigo-50 text-indigo-950 dark:from-indigo-950 dark:to-stone-900 dark:text-indigo-50",
+    tone: "from-indigo-100/80 to-violet-50 text-indigo-950 dark:from-indigo-950 dark:to-stone-900 dark:text-indigo-50",
   },
   {
     href: "/studium",
     label: "Amelies Zeug",
     icon: <Logo of="amelie" />,
     who: "Studium an der MHH",
-    tone: "from-teal-100 to-teal-50 text-teal-950 dark:from-teal-950 dark:to-stone-900 dark:text-teal-50",
+    tone: "from-teal-100/80 to-emerald-50 text-teal-950 dark:from-teal-950 dark:to-stone-900 dark:text-teal-50",
   },
   {
     href: "/batzis/index.html",
     label: "Die Batzi's",
     icon: <Logo of="gemeinsam" />,
     who: "Unser gemeinsamer Alltag",
-    tone: "from-orange-100 to-rose-50 text-rose-950 dark:from-rose-950 dark:to-stone-900 dark:text-rose-50",
+    tone: "from-orange-100/80 to-rose-50 text-rose-950 dark:from-rose-950 dark:to-stone-900 dark:text-rose-50",
   },
 ];
 
@@ -108,7 +108,7 @@ export function Shell({ children }: { children: ReactNode }) {
       <AuthGate>
         {(session) => (
           <div className="flex min-h-screen flex-col md:flex-row">
-            <aside className="border-b border-stone-200/80 bg-white/70 backdrop-blur md:sticky md:top-0 md:h-screen md:w-60 md:shrink-0 md:border-b-0 md:border-r md:bg-transparent dark:border-stone-800 dark:bg-stone-900/70 md:dark:bg-transparent">
+            <aside className="border-b border-stone-200/50 bg-white/70 backdrop-blur md:sticky md:top-0 md:h-screen md:w-60 md:shrink-0 md:border-b-0 md:bg-transparent dark:border-stone-800 dark:bg-stone-900/70 md:dark:bg-transparent">
               <div className="flex items-center gap-3 px-4 py-4 md:px-5 md:py-6">
                 <Link
                   href="/"

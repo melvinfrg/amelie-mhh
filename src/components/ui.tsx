@@ -30,7 +30,7 @@ export function Button({
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
     <section
-      className={`rounded-2xl border border-stone-200/80 bg-white shadow-soft dark:border-stone-800 dark:bg-stone-900 ${/(^|\s)p-/.test(className) ? "" : "p-4"} ${className}`}
+      className={`rounded-[1.75rem] bg-white shadow-soft dark:bg-stone-900 dark:ring-1 dark:ring-stone-800 ${/(^|\s)p-/.test(className) ? "" : "p-4"} ${className}`}
     >
       {children}
     </section>
