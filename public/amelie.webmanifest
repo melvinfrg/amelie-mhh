@@ -1,0 +1,28 @@
+{
+  "name": "Amelies Zeug",
+  "short_name": "Amelie",
+  "start_url": "/studium",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fff6ee",
+  "theme_color": "#0f766e",
+  "lang": "de",
+  "icons": [
+    {
+      "src": "/icons/amelie-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/amelie-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/amelie-icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
