@@ -24,9 +24,9 @@ const STUDIUM: NavItem[] = [
 
 /** The site holds three areas under one login: Amelie's Studium, Die Batzi's (plain HTML under /batzis) and Melvin's page. */
 export const AREAS = [
-  { href: "/studium", label: "Studium MHH", icon: "🩺", who: "Amelie" },
-  { href: "/batzis/index.html", label: "Die Batzi's", icon: "🐻", who: "Amelie & Melvin" },
-  { href: "/melvin", label: "Melvin", icon: "🧑‍💻", who: "Melvin" },
+  { href: "/melvin", label: "Melvins Zeug", icon: "🧑‍💻", who: "Notizen und mehr" },
+  { href: "/studium", label: "Amelies Zeug", icon: "🩺", who: "Studium MHH" },
+  { href: "/batzis/index.html", label: "Die Batzi's", icon: "🐻", who: "Unser gemeinsamer Alltag" },
 ];
 
 const PORTAL: NavItem[] = AREAS.map(({ href, label, icon }) => ({ href, label, icon }));
