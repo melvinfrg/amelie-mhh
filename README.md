@@ -4,7 +4,11 @@ Eine Seite, ein Login, drei Bereiche:
 
 - **Studium MHH** (`/studium`, Amelie): Termine mit Countdown, To-dos, Links und eine Lernplattform mit automatischer Wiederholung (Details unten).
 - **Die Batzi's** (`/batzis`, beide): die gemeinsame Alltags-Zentrale (ToDos, Einkauf, Rezepte, Kalender, Tracker, Reisen, Tagebuch, Orga, Fotos). Reines HTML/JS in `public/batzis`, übernommen aus [melvinfrg/die_batzis](https://github.com/melvinfrg/die_batzis). Die Tabellen liegen im selben Supabase-Projekt mit dem Präfix `batzi_` (`supabase/migrations/0005_batzis.sql`); Zugriff hat, wessen E-Mail in `batzi_members` steht. `js/config.js` wird beim Build aus den Umgebungsvariablen erzeugt. Die Kalender-Abos laufen über die Edge Function `batzi-ical` (`supabase/functions/batzi-ical`).
-- **Melvin** (`/melvin`): Startseite mit Notizen und Abkürzungen zu den Batzi's.
+- **Melvins Zeug** (`/melvin`): Übersicht, Finanzen (fixe und variable Einnahmen/Ausgaben, pro Monat verrechnet, Verträge zählen als Fixkosten), Termine mit Kalender, ToDos, Verträge (Versicherungen, Abos & Co. mit Links zum Verschicken) und Notizen. Tabellen in `supabase/migrations/0009_melvin.sql`.
+
+**Einheitliche Optik:** Alle Bereiche nutzen die Schriften der Batzi's (Fredoka, Nunito), warme Farben und runde Karten. Jeder Bereich hat seine Akzentfarbe (`brand-*` in `src/app/globals.css`, gesetzt über `data-area` in `Shell`). Termine und ToDos teilen sich die Bausteine in `src/components/events.tsx`, `todos.tsx` und `MonthCalendar.tsx`.
+
+**Termine teilen:** Jeder Termin aus Melvins Kalender, Amelies Studium oder den Batzi's lässt sich mit „📤 Übertragen“ in die anderen Kalender kopieren, auch in den der anderen Person. Verbundene Kopien (🔗) ändern sich automatisch mit, wenn eine davon geändert wird (Trigger in `supabase/migrations/0010_event_links.sql`). Die Batzi-Termine lassen sich außerdem in den eigenen Kalendern einblenden; die Startseite zeigt die nächsten zwei Wochen aus allen drei Kalendern. Teilen geht nur zwischen Mitgliedern der Batzi's.
 
 **Umzug der alten Batzis-Daten:** `/batzis/umzug.html` öffnen (auf der neuen Seite angemeldet), mit dem alten Batzis-Login anmelden, Personen zuordnen. Die Seite kopiert alle Daten und Fotos; im alten Projekt wird nichts gelöscht, und ein zweiter Durchlauf überspringt, was schon da ist. Jede Person braucht vorher ein Konto auf der neuen Seite.
 

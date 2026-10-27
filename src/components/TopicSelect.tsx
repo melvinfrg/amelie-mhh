@@ -94,8 +94,8 @@ function NewTopic({ onCreated, onCancel }: { onCreated: (id: string) => void; on
   }
 
   return (
-    <div className="space-y-2 rounded-lg border border-dashed border-slate-300 p-3 dark:border-slate-700">
-      <p className="text-sm text-slate-600 dark:text-slate-300">Neues Thema anlegen:</p>
+    <div className="space-y-2 rounded-lg border border-dashed border-stone-300 p-3 dark:border-stone-700">
+      <p className="text-sm text-stone-600 dark:text-stone-300">Neues Thema anlegen:</p>
       <div className="flex flex-wrap gap-2">
         <Select value={subject} onChange={(e) => setSubject(e.target.value)} className="w-44" aria-label="Fach">
           {choices.map((c) => (

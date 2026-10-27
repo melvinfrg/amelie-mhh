@@ -87,8 +87,8 @@ function Overview() {
               </Field>
             </div>
             <div>
-              <p className="mb-1 text-sm font-medium text-slate-700 dark:text-slate-300">Bild (Foto, Screenshot oder Scan)</p>
-              <label className="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-teal-600/50 bg-teal-50/50 px-4 py-6 text-center hover:bg-teal-50 dark:bg-teal-950/30 dark:hover:bg-teal-950/60">
+              <p className="mb-1 text-sm font-medium text-stone-700 dark:text-stone-300">Bild (Foto, Screenshot oder Scan)</p>
+              <label className="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-brand-600/50 bg-brand-50/50 px-4 py-6 text-center hover:bg-brand-50 dark:bg-brand-950/30 dark:hover:bg-brand-950/60">
                 <input type="file" accept="image/*" onChange={(e) => chooseFile(e.target.files?.[0] ?? null)} className="sr-only" />
                 {preview ? (
                   // eslint-disable-next-line @next/next/no-img-element -- local preview of the chosen file
@@ -96,8 +96,8 @@ function Overview() {
                 ) : (
                   <span className="text-3xl">🖼️</span>
                 )}
-                <span className="font-medium text-teal-800 dark:text-teal-300">{file ? file.name : "Bild auswählen"}</span>
-                <span className="text-xs text-slate-500">{file ? "Tippen, um ein anderes Bild zu wählen" : "Am Handy auch direkt mit der Kamera"}</span>
+                <span className="font-medium text-brand-800 dark:text-brand-300">{file ? file.name : "Bild auswählen"}</span>
+                <span className="text-xs text-stone-500">{file ? "Tippen, um ein anderes Bild zu wählen" : "Am Handy auch direkt mit der Kamera"}</span>
               </label>
             </div>
             {error && <p className="text-sm text-rose-700 dark:text-rose-400">{error}</p>}
@@ -113,12 +113,12 @@ function Overview() {
           const own = questions.rows.filter((q) => q.figure_id === f.id);
           return (
             <Card key={f.id} className="flex flex-col">
-              <p className="text-xs text-slate-500">{topicPath(topics.rows, f.topic_id)}</p>
+              <p className="text-xs text-stone-500">{topicPath(topics.rows, f.topic_id)}</p>
               <p className="mb-2 font-medium">{f.title}</p>
               <div className="mb-3 overflow-hidden rounded-lg">
                 <FigureThumb figure={f} />
               </div>
-              <p className="mb-3 text-xs text-slate-500">
+              <p className="mb-3 text-xs text-stone-500">
                 {f.masks.length} Strukturen · {own.filter(isMastered).length} sicher · {own.filter(isNew).length} neu
               </p>
               <div className="mt-auto flex gap-2">
@@ -245,7 +245,7 @@ function Editor({ id }: { id: string }) {
       <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
         <div>
           <div className="mb-3 flex flex-wrap items-center gap-2 text-sm">
-            <span className="text-slate-500">Neue Markierung als:</span>
+            <span className="text-stone-500">Neue Markierung als:</span>
             {LEVELS.map((l) => (
               <Button key={l.value} variant={drawLevel === l.value ? "primary" : "secondary"} onClick={() => setDrawLevel(l.value)}>
                 {l.value} · {l.label}
@@ -266,7 +266,7 @@ function Editor({ id }: { id: string }) {
             onSelect={setSelected}
             drawLevel={drawLevel}
           />
-          <p className="mt-2 text-xs text-slate-500">
+          <p className="mt-2 text-xs text-stone-500">
             Rechteck über eine Beschriftung oder Struktur ziehen. Markierungen lassen sich verschieben und an der blauen Ecke vergrößern.
           </p>
         </div>
@@ -283,7 +283,7 @@ function Editor({ id }: { id: string }) {
                 />
               </Field>
               <div>
-                <p className="mb-1 text-sm font-medium text-slate-700 dark:text-slate-300">Ebene</p>
+                <p className="mb-1 text-sm font-medium text-stone-700 dark:text-stone-300">Ebene</p>
                 <div className="flex gap-1">
                   {LEVELS.map((l) => (
                     <Button key={l.value} variant={current.level === l.value ? "primary" : "secondary"} onClick={() => patchMask({ level: l.value })}>
@@ -297,7 +297,7 @@ function Editor({ id }: { id: string }) {
               </Button>
             </Card>
           ) : (
-            <Card className="text-sm text-slate-500">
+            <Card className="text-sm text-stone-500">
               Ziehe auf dem Bild ein Rechteck, um eine Struktur zu markieren, oder lass gedruckte Beschriftungen mit „Beschriftungen erkennen“ automatisch finden. Grobe Strukturen (Ebene 1) werden zuerst abgefragt, feinere erst, wenn
               die gröberen dieser Abbildung gelernt sind.
             </Card>
@@ -334,7 +334,7 @@ function Editor({ id }: { id: string }) {
                 type="checkbox"
                 checked={draft.hide_all}
                 onChange={(e) => setDraft({ ...draft, hide_all: e.target.checked })}
-                className="mt-0.5 accent-teal-700"
+                className="mt-0.5 accent-brand-700"
               />
               <span>Beim Üben alle Markierungen verdecken, nicht nur die gefragte (empfohlen, wenn auf dem Bild Beschriftungen stehen)</span>
             </label>

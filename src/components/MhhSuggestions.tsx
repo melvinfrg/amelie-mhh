@@ -167,9 +167,9 @@ export function MhhSuggestions() {
         <button className="text-left" onClick={() => setOpen(!open)}>
           <h2 className="font-medium">
             {open ? "▾" : "▸"} Vorschläge von der MHH-Webseite
-            {count > 0 && <span className="ml-2 rounded-full bg-teal-600 px-2 py-0.5 text-xs text-white">{count}</span>}
+            {count > 0 && <span className="ml-2 rounded-full bg-brand-600 px-2 py-0.5 text-xs text-white">{count}</span>}
           </h2>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-stone-500">
             {!data && !error
               ? "Termine werden geladen …"
               : count
@@ -216,7 +216,7 @@ export function MhhSuggestions() {
                 {changed.map(({ s, e }) => (
                   <li key={s.source} className="rounded-lg border border-amber-300 p-3 text-sm dark:border-amber-800">
                     <p className="font-medium">{s.title}</p>
-                    <p className="text-slate-500">
+                    <p className="text-stone-500">
                       <span className="line-through">{formatEventDate(e)}</span> → {formatEventDate(s)}
                     </p>
                   </li>
@@ -234,11 +234,11 @@ export function MhhSuggestions() {
               <section key={group}>
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <h3 className="text-sm font-medium">{group}</h3>
-                  <button className="text-xs text-slate-500 hover:underline" onClick={() => hide(items.map((s) => s.source))}>
+                  <button className="text-xs text-stone-500 hover:underline" onClick={() => hide(items.map((s) => s.source))}>
                     Gruppe ausblenden
                   </button>
                 </div>
-                <ul className="divide-y divide-slate-100 rounded-lg border border-slate-200 dark:divide-slate-800 dark:border-slate-800">
+                <ul className="divide-y divide-stone-100 rounded-lg border border-stone-200 dark:divide-stone-800 dark:border-stone-800">
                   {items.map((s) => (
                     <li key={s.source} className="flex items-start gap-3 px-3 py-2 text-sm">
                       <input
@@ -251,16 +251,16 @@ export function MhhSuggestions() {
                       <div className="min-w-0 flex-1">
                         <p className="font-medium">
                           {s.title}
-                          <span className="ml-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs font-normal text-slate-500 dark:bg-slate-800">
+                          <span className="ml-2 rounded bg-stone-100 px-1.5 py-0.5 text-xs font-normal text-stone-500 dark:bg-stone-800">
                             {KIND_LABEL[s.kind]}
                           </span>
                         </p>
-                        <p className="text-slate-500">
+                        <p className="text-stone-500">
                           {formatEventDate(s)}
                           {s.location ? ` · ${s.location}` : ""}
                         </p>
                       </div>
-                      <button className="text-xs text-slate-400 hover:text-slate-600" onClick={() => hide([s.source])} aria-label={`${s.title} ausblenden`}>
+                      <button className="text-xs text-stone-400 hover:text-stone-600" onClick={() => hide([s.source])} aria-label={`${s.title} ausblenden`}>
                         ✕
                       </button>
                     </li>
@@ -283,7 +283,7 @@ export function MhhSuggestions() {
             </div>
           )}
 
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-stone-500">
             Wiederholungsprüfungen und die Probeklausur sind nicht vorausgewählt. Die MHH kann Termine noch ändern; geänderte Daten tauchen hier oben
             wieder auf. Quellen:{" "}
             {data?.links.map((l, i) => (

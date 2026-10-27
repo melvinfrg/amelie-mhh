@@ -164,6 +164,99 @@ export interface Note extends Base {
   pinned: boolean;
 }
 
+export type MelvinCategory = "privat" | "arbeit" | "sport" | "familie" | "sonstiges";
+
+export interface MelvinEvent extends Base {
+  title: string;
+  category: MelvinCategory;
+  starts_at: string;
+  ends_at: string | null;
+  all_day: boolean;
+  location: string | null;
+  notes: string | null;
+  done: boolean;
+}
+
+export interface MelvinTodo extends Base {
+  title: string;
+  due_date: string | null;
+  priority: 1 | 2 | 3;
+  category: string | null;
+  notes: string | null;
+  done: boolean;
+}
+
+export type Interval = "monatlich" | "vierteljaehrlich" | "halbjaehrlich" | "jaehrlich";
+
+export interface FinanceEntry extends Base {
+  title: string;
+  kind: "einnahme" | "ausgabe";
+  /** Euro. Supabase returns numeric columns as numbers or strings, so read it with Number(). */
+  amount: number;
+  /** Fixed entries repeat every interval from date on, until end_date; variable ones happen once on date. */
+  fixed: boolean;
+  interval: Interval | null;
+  /** YYYY-MM-DD */
+  date: string;
+  end_date: string | null;
+  category: string;
+  note: string | null;
+}
+
+export type ContractKind = "versicherung" | "abo" | "vertrag" | "sonstiges";
+
+export interface ContractLink {
+  label: string;
+  url: string;
+}
+
+export interface Contract extends Base {
+  title: string;
+  kind: ContractKind;
+  provider: string | null;
+  amount: number | null;
+  interval: Interval | "einmalig" | null;
+  contract_no: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  /** Last day to cancel. */
+  cancel_by: string | null;
+  /** Notice period as written in the contract, e.g. "3 Monate zum Laufzeitende". */
+  notice: string | null;
+  url: string | null;
+  links: ContractLink[];
+  notes: string | null;
+  /** Count the costs as fixed costs in Finanzen. */
+  in_finances: boolean;
+}
+
+export type CalendarSource = "studium" | "melvin" | "batzis";
+
+/** Two dates in different calendars that are kept in step (see supabase/migrations/0010_event_links.sql). */
+export interface EventLink extends Base {
+  a_kind: CalendarSource;
+  a_id: ID;
+  a_user: ID | null;
+  b_kind: CalendarSource;
+  b_id: ID;
+  b_user: ID | null;
+}
+
+/** A date in the shared calendar of the Batzi's: a day plus optional times in German time. */
+export interface BatziEvent extends Base {
+  title: string;
+  event_date: string;
+  end_date: string | null;
+  all_day: boolean;
+  start_time: string | null;
+  end_time: string | null;
+  location: string | null;
+  notes: string | null;
+  who: string | null;
+  color: string;
+  recurrence: "none" | "weekly" | "biweekly" | "monthly" | "yearly";
+}
+
 export interface Tables {
   events: StudyEvent;
   todos: Todo;
@@ -177,6 +270,12 @@ export interface Tables {
   calendar_feeds: CalendarFeed;
   settings: Settings;
   notes: Note;
+  melvin_events: MelvinEvent;
+  melvin_todos: MelvinTodo;
+  finance_entries: FinanceEntry;
+  contracts: Contract;
+  event_links: EventLink;
+  batzi_events: BatziEvent;
 }
 
 export type TableName = keyof Tables;

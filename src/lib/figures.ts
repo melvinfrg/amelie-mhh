@@ -8,7 +8,7 @@ import type { Figure, Mask, Question } from "./types";
 const BUCKET = "figures";
 
 export const LEVELS: { value: number; label: string; tone: string }[] = [
-  { value: 1, label: "Grob", tone: "border-teal-500 bg-teal-500/20" },
+  { value: 1, label: "Grob", tone: "border-brand-500 bg-brand-500/20" },
   { value: 2, label: "Mittel", tone: "border-amber-500 bg-amber-500/20" },
   { value: 3, label: "Fein", tone: "border-rose-500 bg-rose-500/20" },
 ];

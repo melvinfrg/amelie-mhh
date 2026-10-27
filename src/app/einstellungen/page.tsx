@@ -65,15 +65,15 @@ export default function EinstellungenPage() {
               step={0.01}
               value={settings.desired_retention}
               onChange={(e) => save({ desired_retention: Number(e.target.value) })}
-              className="w-full accent-teal-700"
+              className="w-full accent-brand-700"
             />
-            <span className="text-xs text-slate-500">Höher = häufigere Wiederholungen, dafür sitzt mehr.</span>
+            <span className="text-xs text-stone-500">Höher = häufigere Wiederholungen, dafür sitzt mehr.</span>
           </Field>
         </div>
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
-            className="h-4 w-4 accent-teal-700"
+            className="h-4 w-4 accent-brand-700"
             checked={settings.gating_enabled}
             onChange={(e) => save({ gating_enabled: e.target.checked })}
           />
@@ -88,7 +88,7 @@ export default function EinstellungenPage() {
               step={0.05}
               value={settings.unlock_threshold}
               onChange={(e) => save({ unlock_threshold: Number(e.target.value) })}
-              className="w-full max-w-sm accent-teal-700"
+              className="w-full max-w-sm accent-brand-700"
             />
           </Field>
         )}
@@ -96,7 +96,7 @@ export default function EinstellungenPage() {
 
       <Card className="space-y-3">
         <h2 className="font-medium">Datensicherung</h2>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-stone-500">
           Exportiert alle Termine, To-dos, Links, Fächer, Fragen und den Lernverlauf als JSON-Datei. Der Import ergänzt fehlende Einträge.
         </p>
         <div className="flex flex-wrap gap-2">

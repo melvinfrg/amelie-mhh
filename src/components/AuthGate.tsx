@@ -33,7 +33,7 @@ export function AuthGate({ children }: { children: (session: Session | null) => 
   }, []);
 
   // Everything below works with browser-only data, so it renders on the client only.
-  if (!mounted || checking) return <div className="p-8 text-sm text-slate-500">Lädt …</div>;
+  if (!mounted || checking) return <div className="p-8 text-sm text-stone-500">Lädt …</div>;
   if (hasSupabase && !session) return <Login />;
   return <>{children(session)}</>;
 }
@@ -60,10 +60,10 @@ function Login() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 p-4 dark:bg-slate-950">
+    <main className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-sm">
         <h1 className="text-xl font-semibold">Amelie &amp; Melvin</h1>
-        <p className="mb-4 mt-1 text-sm text-slate-500">{mode === "login" ? "Anmelden" : "Konto erstellen"}</p>
+        <p className="mb-4 mt-1 text-sm text-stone-500">{mode === "login" ? "Anmelden" : "Konto erstellen"}</p>
         <form onSubmit={submit} className="space-y-3">
           <Field label="E-Mail">
             <TextInput type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -71,13 +71,13 @@ function Login() {
           <Field label="Passwort">
             <TextInput type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
           </Field>
-          {message && <p className="text-sm text-slate-600 dark:text-slate-300">{message}</p>}
+          {message && <p className="text-sm text-stone-600 dark:text-stone-300">{message}</p>}
           <Button type="submit" disabled={busy} className="w-full">
             {mode === "login" ? "Anmelden" : "Registrieren"}
           </Button>
         </form>
         <button
-          className="mt-3 text-xs text-slate-500 underline"
+          className="mt-3 text-xs text-stone-500 underline"
           onClick={() => setMode(mode === "login" ? "signup" : "login")}
         >
           {mode === "login" ? "Noch kein Konto? Registrieren" : "Zurück zur Anmeldung"}
