@@ -30,7 +30,7 @@ export const AREAS = [
     href: "/melvin",
     label: "Melvins Zeug",
     icon: "🧑‍💻",
-    who: "Finanzen, Termine, ToDos und Verträge",
+    who: "Finanzen, Termine, ToDos, Verträge, Lebenslauf",
     tone: "from-indigo-100 to-indigo-50 text-indigo-950 dark:from-indigo-950 dark:to-stone-900 dark:text-indigo-50",
     links: [
       { href: "/melvin/finanzen", label: "💶 Finanzen" },
@@ -75,6 +75,7 @@ const MELVIN: NavItem[] = [
   { href: "/melvin/termine", label: "Termine", icon: "📅" },
   { href: "/melvin/todos", label: "ToDos", icon: "✅" },
   { href: "/melvin/vertraege", label: "Verträge", icon: "📑" },
+  { href: "/melvin/lebenslauf", label: "Lebenslauf", icon: "📄" },
   { href: "/melvin/notizen", label: "Notizen", icon: "📝" },
   { href: "/batzis/index.html", label: "Die Batzi's", icon: "🐻" },
 ];
