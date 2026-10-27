@@ -46,6 +46,9 @@ if (!isDemo) {
     },
     async deletePhoto(path) { ok(await sb.storage.from(BUCKET).remove([path])); },
     async fetchIcal() { return ok(await sb.functions.invoke('batzi-ical', { body: {} })); },
+    // Termine mit Melvins Kalender und Amelies Studium teilen (supabase/migrations/0010_event_links.sql)
+    async rpc(name, args) { return ok(await sb.rpc(name, args)); },
+    async eventLinks() { return ok(await sb.from('event_links').select('a_kind, a_id, a_user, b_kind, b_id, b_user')); },
     subscribe(cb) {
       sb.channel('batzi-live')
         .on('postgres_changes', { event: '*', schema: 'public' }, (p) => { if (p.table.startsWith('batzi_')) cb(p.table.slice(6)); })
@@ -109,6 +112,8 @@ if (!isDemo) {
       return { feeds: feeds.map((f) => ({ id: f.id, events: [0, 1, 3, 4, 7].map((d, i) => ({ id: 'd' + i, title: ['Frühdienst', 'Spätdienst', 'Nachtdienst', 'Frei', 'Frühdienst'][i], event_date: addDays(T, d), all_day: i === 3, start_time: ['06:00', '14:00', '21:30', null, '06:00'][i], end_time: ['14:30', '22:00', '06:30', null, '14:30'][i] })) })) };
     },
     async removeMany(t, ids) { write(t, read(t).filter((r) => !ids.includes(r.id))); },
+    async rpc() { throw new Error('Im Demo-Modus nicht verfügbar'); },
+    async eventLinks() { return []; },
     subscribe(cb) {
       window.addEventListener('storage', (e) => { if (e.key?.startsWith('batzi-demo-')) cb(e.key.replace('batzi-demo-', '')); });
     },

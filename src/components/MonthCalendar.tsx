@@ -52,6 +52,12 @@ export const TONES = {
     bar: "bg-orange-400 sm:bg-orange-100 sm:text-orange-900 sm:dark:bg-orange-950 sm:dark:text-orange-100",
     dot: "bg-orange-500",
   },
+  /** Dates from the Batzi's, in their coral. */
+  batzi: {
+    chip: "bg-[#ffe1d8] text-[#7a2e20] dark:bg-[#4a2820] dark:text-[#ffd9cf]",
+    bar: "bg-[#ff9f8c] sm:bg-[#ffe1d8] sm:text-[#7a2e20] sm:dark:bg-[#4a2820] sm:dark:text-[#ffd9cf]",
+    dot: "bg-[#ff7a66]",
+  },
   stone: {
     chip: "bg-stone-200 text-stone-800 dark:bg-stone-800 dark:text-stone-100",
     bar: "bg-stone-400 sm:bg-stone-100 sm:text-stone-900 sm:dark:bg-stone-950 sm:dark:text-stone-100",

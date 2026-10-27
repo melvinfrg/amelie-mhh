@@ -230,6 +230,33 @@ export interface Contract extends Base {
   in_finances: boolean;
 }
 
+export type CalendarSource = "studium" | "melvin" | "batzis";
+
+/** Two dates in different calendars that are kept in step (see supabase/migrations/0010_event_links.sql). */
+export interface EventLink extends Base {
+  a_kind: CalendarSource;
+  a_id: ID;
+  a_user: ID | null;
+  b_kind: CalendarSource;
+  b_id: ID;
+  b_user: ID | null;
+}
+
+/** A date in the shared calendar of the Batzi's: a day plus optional times in German time. */
+export interface BatziEvent extends Base {
+  title: string;
+  event_date: string;
+  end_date: string | null;
+  all_day: boolean;
+  start_time: string | null;
+  end_time: string | null;
+  location: string | null;
+  notes: string | null;
+  who: string | null;
+  color: string;
+  recurrence: "none" | "weekly" | "biweekly" | "monthly" | "yearly";
+}
+
 export interface Tables {
   events: StudyEvent;
   todos: Todo;
@@ -247,6 +274,8 @@ export interface Tables {
   melvin_todos: MelvinTodo;
   finance_entries: FinanceEntry;
   contracts: Contract;
+  event_links: EventLink;
+  batzi_events: BatziEvent;
 }
 
 export type TableName = keyof Tables;

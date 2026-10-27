@@ -1,4 +1,4 @@
-import { S, add, patch, del, avatar, whoOptions, COLORS, getSetting, setSetting, rerender, nameOf } from '../state.js';
+import { S, add, patch, del, avatar, whoOptions, COLORS, getSetting, setSetting, rerender, nameOf, me } from '../state.js';
 import { db, isDemo } from '../db.js';
 import { esc, todayStr, toDateStr, parseDate, addDays, addMonths, diffDays, fmtDate, fmtTime, relDay, uid, safeUrl } from '../util.js';
 import { openModal, toast } from '../ui.js';
@@ -37,6 +37,53 @@ export async function loadExternal(force = false) {
   } catch (e) { console.error(e); EXT.errors = { _all: e.message }; }
   finally { EXT.loading = false; EXT.loaded = Date.now(); rerender(); }
 }
+// ---------- Mit Melvins Kalender und Amelies Studium verbunden ----------
+const LINKS = { byEvent: {}, loaded: 0, loading: false };
+const AREA = { studium: 'Studium', melvin: 'Kalender' };
+async function loadLinks(force = false) {
+  if (isDemo || LINKS.loading || (!force && Date.now() - LINKS.loaded < 60000)) return;
+  LINKS.loading = true;
+  try {
+    const rows = await db.eventLinks();
+    const by = {};
+    for (const l of rows || []) {
+      if (l.a_kind === 'batzis') (by[l.a_id] ||= []).push({ kind: l.b_kind, user: l.b_user });
+      if (l.b_kind === 'batzis') (by[l.b_id] ||= []).push({ kind: l.a_kind, user: l.a_user });
+    }
+    const changed = JSON.stringify(by) !== JSON.stringify(LINKS.byEvent);
+    LINKS.byEvent = by;
+    if (changed) rerender();
+  } catch (e) { console.error(e); }
+  finally { LINKS.loading = false; LINKS.loaded = Date.now(); }
+}
+const linkNames = (id) => [...new Set((LINKS.byEvent[id] || []).map((l) => nameOf(l.user) || AREA[l.kind]))];
+
+/** Termin in Melvins Kalender oder Amelies Studium übertragen. */
+async function shareEvent(id) {
+  const e = S.events.find((x) => x.id === id); if (!e) return;
+  let targets = [];
+  try { targets = (await db.rpc('share_targets')) || []; } catch (err) { toast(err.message, 'error'); return; }
+  if (!targets.length) { toast('Noch niemand zum Teilen gefunden', 'error'); return; }
+  const linked = LINKS.byEvent[id] || [];
+  document.getElementById('modal').close();
+  openModal({ title: '📤 Termin übertragen', submitLabel: 'Übertragen', body: `
+    <p class="sub"><b>${esc(e.title)}</b> · ${esc(fmtDate(e.event_date, 'long'))}</p>
+    <div class="field"><span>In wessen Kalender?</span>
+      <div class="share-targets">${targets.map((t) => `<label class="share-target"><input type="checkbox" name="to_${esc(t.user_id)}">
+        <span>${esc(t.emoji)} ${t.user_id === me() ? 'Mein' : esc(t.name) + 's'} ${AREA[t.area] || 'Kalender'}${linked.some((l) => l.user === t.user_id) ? ' 🔗' : ''}</span></label>`).join('')}</div></div>
+    <label class="switch"><input type="checkbox" name="keep" checked><span>Verbunden halten: Änderungen an Zeit, Ort und Titel gehen überall mit</span></label>
+    ${e.recurrence && e.recurrence !== 'none' ? '<p class="hint">🔁 Übertragen wird nur der erste Termin, nicht die Wiederholungen.</p>' : ''}`,
+    onSubmit: async (d) => {
+      const to = targets.filter((t) => d['to_' + t.user_id]);
+      if (!to.length) { toast('Bitte mindestens einen Kalender wählen', 'error'); return false; }
+      try {
+        for (const t of to) await db.rpc('share_event', { src_kind: 'batzis', src_id: id, dest_kind: t.area, dest_user: t.user_id, keep_linked: !!d.keep });
+      } catch (err) { toast(err.message, 'error'); return false; }
+      toast(`Übertragen an ${to.map((t) => t.name).join(' & ')} 💌`);
+      await loadLinks(true);
+    } });
+}
+
 export const eventsOn = (ds) => [...S.events, ...EXT.events].filter((e) => occursOn(e, ds)).sort(evSort);
 export const tripsOn = (ds) => S.trips.filter((t) => t.start_date && ds >= t.start_date && ds <= (t.end_date || t.start_date));
 export const todosOn = (ds) => S.todos.filter((t) => !t.done && t.due_date === ds);
@@ -61,13 +108,13 @@ export function eventRow(e, ds, { showDate = false } = {}) {
   return `<button class="ev-row c-${esc(e.color || 'peach')} ${e.external ? 'ext' : ''}" data-action="${e.external ? 'ev-ext' : 'ev-edit'}" data-id="${esc(e.id)}">
     <span class="ev-time">${showDate ? `<b>${esc(relDay(ds))}</b>` : ''}${e.all_day ? 'Ganztägig' : esc(fmtTime(e.start_time)) + (e.end_time ? '–' + esc(fmtTime(e.end_time)) : '')}</span>
     <span class="ev-text"><span class="ev-title">${esc(e.title)}${esc(ageNote(e, ds))}</span>
-      <span class="ev-sub">${multi ? `bis ${esc(fmtDate(e.end_date, 'short'))} · ` : ''}${e.location ? '📍 ' + esc(e.location) : ''}${e.recurrence && e.recurrence !== 'none' ? ' 🔁' : ''}${e.external ? `<span class="ext-tag">🔗 ${esc(e.feedName)}</span>` : ''}</span></span>
+      <span class="ev-sub">${multi ? `bis ${esc(fmtDate(e.end_date, 'short'))} · ` : ''}${e.location ? '📍 ' + esc(e.location) : ''}${e.recurrence && e.recurrence !== 'none' ? ' 🔁' : ''}${e.external ? `<span class="ext-tag">🔗 ${esc(e.feedName)}</span>` : ''}${!e.external && linkNames(e.id).length ? `<span class="ext-tag" title="Verbunden, Änderungen gehen mit">🔗 ${esc(linkNames(e.id).join(', '))}</span>` : ''}</span></span>
     ${e.who ? avatar(e.who, 'sm') : ''}
   </button>`;
 }
 
 export function render() {
-  queueMicrotask(() => loadExternal());
+  queueMicrotask(() => { loadExternal(); loadLinks(); });
   const T = todayStr();
   const m0 = C.month;
   const first = parseDate(m0);
@@ -174,7 +221,8 @@ export function newEvent(date) {
 export function editEvent(id) {
   const e = S.events.find((x) => x.id === id); if (!e) return;
   openModal({ title: 'Termin bearbeiten', body: evForm(e), onOpen: bindTimes,
-    onSubmit: (d) => patch('events', id, fromForm(d)), onDelete: () => del('events', id) });
+    onSubmit: (d) => patch('events', id, fromForm(d)), onDelete: () => del('events', id),
+    extra: isDemo ? null : { label: '📤 Übertragen', onClick: () => shareEvent(id) } });
 }
 
 function feedManager() {

@@ -2,11 +2,13 @@
 
 import { useState, type FormEvent } from "react";
 import { Badge, DateFields, EventCard, isSoon, useCalendarView, ViewTabs } from "@/components/events";
-import { MonthCalendar } from "@/components/MonthCalendar";
+import { BatziToggle, LinkedNote, ShareEvent } from "@/components/ShareEvent";
+import { MonthCalendar, TONES } from "@/components/MonthCalendar";
 import { Button, Card, Empty, ErrorNote, Field, PageHeader, Select, TextArea, TextInput } from "@/components/ui";
 import { isCurrent } from "@/lib/dates";
 import { MELVIN_CATEGORY_LABEL } from "@/lib/labels";
 import { CATEGORY_TONE } from "@/lib/melvin";
+import { BATZI_CALENDAR, useBatziOverlay } from "@/lib/sharing";
 import { useTable } from "@/lib/useTable";
 import type { MelvinCategory, MelvinEvent } from "@/lib/types";
 
@@ -30,6 +32,7 @@ export default function MelvinTermine() {
   const [editing, setEditing] = useState<{ id?: string; draft: Draft } | null>(null);
   const [showPast, setShowPast] = useState(false);
   const [view, changeView] = useCalendarView("melvin-termine-ansicht");
+  const batzis = useBatziOverlay("melvin");
 
   function edit(target: { id?: string; draft: Draft }) {
     setEditing(target);
@@ -58,6 +61,7 @@ export default function MelvinTermine() {
         event={ev}
         urgent={isSoon(ev.starts_at, 1) && !ev.done}
         badge={<Badge className={CATEGORY_TONE[ev.category].chip}>{MELVIN_CATEGORY_LABEL[ev.category]}</Badge>}
+        meta={<LinkedNote source="melvin" id={ev.id} />}
       >
         <div className="ml-auto flex gap-1">
           <Button variant="ghost" onClick={() => events.update(ev.id, { done: !ev.done })}>
@@ -70,6 +74,7 @@ export default function MelvinTermine() {
             Löschen
           </Button>
         </div>
+        <ShareEvent source="melvin" id={ev.id} />
       </EventCard>
     );
   }
@@ -116,14 +121,18 @@ export default function MelvinTermine() {
       )}
 
       <ViewTabs view={view} onChange={changeView} />
+      {view === "kalender" && batzis.available && <BatziToggle on={batzis.on} onChange={batzis.toggle} />}
 
       {view === "kalender" ? (
         <MonthCalendar
-          events={events.rows}
-          tone={(ev) => CATEGORY_TONE[ev.category]}
-          label={(ev) => MELVIN_CATEGORY_LABEL[ev.category]}
-          legend={CATEGORIES.map((c) => ({ label: MELVIN_CATEGORY_LABEL[c], tone: CATEGORY_TONE[c] }))}
-          onEdit={(ev) => edit({ id: ev.id, draft: { ...ev } })}
+          events={[...events.rows, ...batzis.items]}
+          tone={(ev) => ("external" in ev ? TONES.batzi : CATEGORY_TONE[ev.category])}
+          label={(ev) => ("external" in ev ? "Batzi's" : MELVIN_CATEGORY_LABEL[ev.category])}
+          legend={[
+            ...CATEGORIES.map((c) => ({ label: MELVIN_CATEGORY_LABEL[c], tone: CATEGORY_TONE[c] })),
+            ...(batzis.items.length ? [{ label: "Batzi's", tone: TONES.batzi }] : []),
+          ]}
+          onEdit={(ev) => ("external" in ev ? (window.location.href = BATZI_CALENDAR) : edit({ id: ev.id, draft: { ...ev } }))}
           onNew={(day) => {
             const [y, m, d] = day.split("-").map(Number);
             edit({ draft: { ...emptyDraft(), starts_at: new Date(y, m - 1, d, 18).toISOString() } });

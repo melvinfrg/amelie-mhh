@@ -1,6 +1,44 @@
 "use client";
 
 import { AREAS, AreaLink } from "@/components/Shell";
+import { Card } from "@/components/ui";
+import { daysUntil, eventCountdown, formatEventDate, isCurrent } from "@/lib/dates";
+import { BATZI_CALENDAR, batziItems } from "@/lib/sharing";
+import { useTable } from "@/lib/useTable";
+
+interface Upcoming {
+  key: string;
+  title: string;
+  starts_at: string;
+  ends_at?: string | null;
+  all_day?: boolean;
+  icon: string;
+  where: string;
+  href: string;
+}
+
+/** The next dates from all three calendars; a date that sits in several of them shows once. */
+function useUpcoming(days = 14) {
+  const studium = useTable("events");
+  const melvin = useTable("melvin_events");
+  const batzis = useTable("batzi_events");
+  const all: Upcoming[] = [
+    ...melvin.rows.filter((e) => !e.done).map((e) => ({ ...e, key: `m${e.id}`, icon: "🧑‍💻", where: "Melvin", href: "/melvin/termine" })),
+    ...studium.rows.filter((e) => !e.done).map((e) => ({ ...e, key: `s${e.id}`, icon: "🩺", where: "Studium", href: "/termine" })),
+    ...batziItems(batzis.rows).map((e) => ({ ...e, key: `b${e.id}`, icon: "🐻", where: "Batzi's", href: BATZI_CALENDAR })),
+  ];
+  const seen = new Set<string>();
+  return all
+    .filter((e) => isCurrent(e) && daysUntil(e.starts_at) <= days)
+    .sort((a, b) => a.starts_at.localeCompare(b.starts_at))
+    .filter((e) => {
+      const id = `${e.title.trim().toLowerCase()}|${e.starts_at}`;
+      if (seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    })
+    .slice(0, 8);
+}
 
 function greeting() {
   const h = new Date().getHours();
@@ -8,6 +46,7 @@ function greeting() {
 }
 
 export default function Portal() {
+  const upcoming = useUpcoming();
   return (
     <>
       <header className="mb-8">
@@ -53,6 +92,30 @@ export default function Portal() {
           </section>
         ))}
       </div>
+
+      {upcoming.length > 0 && (
+        <Card className="mt-6">
+          <h2 className="mb-2 text-lg font-semibold">📅 Die nächsten zwei Wochen</h2>
+          <ul className="divide-y divide-stone-100 dark:divide-stone-800">
+            {upcoming.map((e) => (
+              <li key={e.key}>
+                <AreaLink href={e.href} className="flex items-center gap-3 py-2.5 text-sm">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-stone-100 text-lg dark:bg-stone-800" title={e.where} aria-hidden>
+                    {e.icon}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-semibold">{e.title}</span>
+                    <span className="block text-xs text-stone-500">
+                      {e.where} · {formatEventDate(e)}
+                    </span>
+                  </span>
+                  <span className="shrink-0 font-semibold">{eventCountdown(e)}</span>
+                </AreaLink>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
     </>
   );
 }

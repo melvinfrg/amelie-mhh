@@ -5,10 +5,12 @@ import { Button, Card, Empty, ErrorNote, Field, PageHeader, ProgressBar, Select,
 import { Badge, DateFields, EventCard, isSoon, useCalendarView, ViewTabs } from "@/components/events";
 import { CalendarExport } from "@/components/CalendarExport";
 import { MhhSuggestions } from "@/components/MhhSuggestions";
+import { BatziToggle, LinkedNote, ShareEvent } from "@/components/ShareEvent";
 import { MonthCalendar, TONES } from "@/components/MonthCalendar";
 import { isCurrent } from "@/lib/dates";
 import { KIND_LABEL } from "@/lib/labels";
 import { SubjectDot } from "@/lib/subjects";
+import { BATZI_CALENDAR, useBatziOverlay } from "@/lib/sharing";
 import { useTable } from "@/lib/useTable";
 import type { EventKind, StudyEvent } from "@/lib/types";
 
@@ -45,6 +47,7 @@ export default function TerminePage() {
   const [showPast, setShowPast] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [view, changeView] = useCalendarView(VIEW_KEY);
+  const batzis = useBatziOverlay("studium");
 
   function edit(target: { id?: string; draft: Draft }) {
     setEditing(target);
@@ -78,11 +81,14 @@ export default function TerminePage() {
         urgent={urgent}
         badge={<Badge className={KIND_TONE[ev.kind].chip}>{KIND_LABEL[ev.kind]}</Badge>}
         meta={
-          subject && (
-            <span className="flex items-center gap-1">
-              <SubjectDot color={subject.color} /> {subject.name}
-            </span>
-          )
+          <>
+            {subject && (
+              <span className="flex items-center gap-1">
+                <SubjectDot color={subject.color} /> {subject.name}
+              </span>
+            )}
+            <LinkedNote source="studium" id={ev.id} />
+          </>
         }
       >
         <span className="text-xs text-stone-500">Vorbereitung</span>
@@ -108,6 +114,7 @@ export default function TerminePage() {
             Löschen
           </Button>
         </div>
+        <ShareEvent source="studium" id={ev.id} />
       </EventCard>
     );
   }
@@ -233,14 +240,19 @@ export default function TerminePage() {
       )}
 
       <ViewTabs view={view} onChange={changeView} />
+      {view === "kalender" && batzis.available && <BatziToggle on={batzis.on} onChange={batzis.toggle} />}
 
       {view === "kalender" ? (
         <MonthCalendar
-          events={events.rows}
-          tone={(ev) => KIND_TONE[ev.kind]}
-          label={(ev) => KIND_LABEL[ev.kind]}
-          legend={(Object.keys(KIND_LABEL) as EventKind[]).map((k) => ({ label: KIND_LABEL[k], tone: KIND_TONE[k] }))}
+          events={[...events.rows, ...batzis.items]}
+          tone={(ev) => ("external" in ev ? TONES.batzi : KIND_TONE[ev.kind])}
+          label={(ev) => ("external" in ev ? "Batzi's" : KIND_LABEL[ev.kind])}
+          legend={[
+            ...(Object.keys(KIND_LABEL) as EventKind[]).map((k) => ({ label: KIND_LABEL[k], tone: KIND_TONE[k] })),
+            ...(batzis.items.length ? [{ label: "Batzi's", tone: TONES.batzi }] : []),
+          ]}
           details={(ev) => {
+            if ("external" in ev) return null;
             const subject = subjects.rows.find((s) => s.id === ev.subject_id);
             return subject && (
               <>
@@ -248,7 +260,7 @@ export default function TerminePage() {
               </>
             );
           }}
-          onEdit={(ev) => edit({ id: ev.id, draft: { ...ev } })}
+          onEdit={(ev) => ("external" in ev ? (window.location.href = BATZI_CALENDAR) : edit({ id: ev.id, draft: { ...ev } }))}
           onNew={(day) => {
             const [y, m, d] = day.split("-").map(Number);
             edit({

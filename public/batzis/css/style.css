@@ -718,3 +718,9 @@ details.help { background: var(--card2); border-radius: 14px; padding: 10px 14px
 details.help summary { font-weight: 800; cursor: pointer; }
 details.help ol { margin: 10px 0 6px; padding-left: 20px; display: grid; gap: 6px; }
 
+
+/* Termin übertragen */
+.share-targets { display: flex; flex-wrap: wrap; gap: 8px; }
+.share-target { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 99px; background: var(--card2); border: 2px solid var(--line); font-weight: 700; cursor: pointer; }
+.share-target:has(input:checked) { border-color: var(--coral); background: var(--peach-s); }
+.share-target input { accent-color: var(--coral); }
