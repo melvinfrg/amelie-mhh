@@ -13,7 +13,7 @@ import { relDay as rel } from '../util.js';
 
 function cookCard() {
   const meal = mealToday();
-  const sugg = dailySuggestions(3);
+  const sugg = dailySuggestions(2);
   return `<section class="card dash-cook">
     <div class="card-head"><h2>🍳 ${meal ? 'Heute gibt’s' : 'Was kochen wir?'}</h2><a class="more" href="#/rezepte">Rezepte ›</a></div>
     ${meal ? `<button class="cook-main" data-action="rc-open" data-id="${esc(meal.id)}"><span class="rc-emoji">${esc(meal.emoji || '🍽️')}</span><span><b>${esc(meal.title)}</b><small>${meal.minutes ? `⏱️ ${meal.minutes} Min.` : ''}</small></span></button>`
@@ -36,9 +36,9 @@ export function render() {
   const mp = myProfile(), p = partner();
   const open = openTodos();
   const overdue = open.filter((t) => t.due_date && t.due_date < T);
-  const dueSoon = sortTodos(open).slice(0, 5);
+  const dueSoon = sortTodos(open).slice(0, 3);
   const shop = openItems();
-  const evs = upcoming(4, 60);
+  const evs = upcoming(3, 60);
   const trackers = sortedTrackers().filter((t) => t.pinned).slice(0, 4);
   const nt = nextTrip();
   const mine = myToday(), theirs = theirToday();
@@ -79,13 +79,12 @@ export function render() {
     <section class="card dash-shop">
       <div class="card-head"><h2>🛒 Einkauf</h2><a class="more" href="#/einkauf">${shop.length} Sachen ›</a></div>
       <form class="quick mini" data-submit="shop-add" autocomplete="off"><input id="dash-shop" name="name" placeholder="Was fehlt?" aria-label="Artikel"><input type="hidden" name="quantity"><input type="hidden" name="category"><button class="btn primary sm" type="submit">＋</button></form>
-      ${shop.length ? `<div class="shop-chips">${shop.slice(0, 14).map((i) => `<button class="chip" data-action="shop-toggle" data-id="${i.id}" title="Abhaken">${catEmoji(i.category)} ${esc(i.name)}${i.quantity ? ` <small>${esc(i.quantity)}</small>` : ''}</button>`).join('')}${shop.length > 14 ? `<a class="chip ghost" href="#/einkauf">+${shop.length - 14}</a>` : ''}</div>` : '<p class="muted">Alles da!</p>'}
+      ${shop.length ? `<div class="shop-chips">${shop.slice(0, 8).map((i) => `<button class="chip" data-action="shop-toggle" data-id="${i.id}" title="Abhaken">${catEmoji(i.category)} ${esc(i.name)}${i.quantity ? ` <small>${esc(i.quantity)}</small>` : ''}</button>`).join('')}${shop.length > 8 ? `<a class="chip ghost" href="#/einkauf">+${shop.length - 8}</a>` : ''}</div>` : '<p class="muted">Alles da!</p>'}
     </section>
 
     <section class="card dash-events">
       <div class="card-head"><h2>📅 Termine</h2><a class="more" href="#/kalender">Kalender ›</a></div>
       ${evs.length ? evs.map(({ date, ev }) => eventRow(ev, date, { showDate: true })).join('') : '<p class="muted">Keine Termine in den nächsten Wochen.</p>'}
-      <button class="btn ghost sm" data-action="ev-new">＋ Termin</button>
     </section>
 
     <div class="dash-col">

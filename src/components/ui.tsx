@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
 
 export const input =
@@ -92,5 +93,65 @@ export function ErrorNote({ error }: { error: string | null }) {
     <p className="mb-4 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-800 dark:bg-rose-950 dark:text-rose-200">
       Fehler: {error}
     </p>
+  );
+}
+
+function greeting() {
+  const h = new Date().getHours();
+  return h < 11 ? "Guten Morgen" : h < 18 ? "Hallo" : "Guten Abend";
+}
+
+/** The header of the overview pages: today's date above a greeting. */
+export function Greeting({ name, subtitle }: { name: string; subtitle?: ReactNode }) {
+  return (
+    <header className="mb-8">
+      <p className="text-sm font-semibold text-brand-700 dark:text-brand-300">
+        {new Date().toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long" })}
+      </p>
+      <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">
+        {greeting()}, {name}
+      </h1>
+      {subtitle && <p className="mt-2 text-stone-500 dark:text-stone-400">{subtitle}</p>}
+    </header>
+  );
+}
+
+/** A card on an overview page: a quiet heading with a link to the full page, then its content. */
+export function Panel({
+  title,
+  href,
+  more = "Alle",
+  children,
+  className = "",
+}: {
+  title: string;
+  href?: string;
+  more?: ReactNode;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <Card className={`p-5 ${className}`}>
+      <div className="mb-3 flex items-baseline justify-between gap-3">
+        <h2 className="text-lg font-semibold">{title}</h2>
+        {href && (
+          <Link href={href} className="shrink-0 text-sm font-semibold text-stone-400 transition hover:text-brand-700 dark:hover:text-brand-300">
+            {more} →
+          </Link>
+        )}
+      </div>
+      {children}
+    </Card>
+  );
+}
+
+/** Weekday and day of a date as a small tile, so lists of dates read at a glance. */
+export function DateTile({ iso, className = "bg-brand-50 text-brand-800 dark:bg-brand-950/60 dark:text-brand-200" }: { iso: string; className?: string }) {
+  const d = new Date(iso);
+  return (
+    <span className={`grid h-11 w-11 shrink-0 place-content-center rounded-xl text-center leading-none ${className}`}>
+      <span className="text-[10px] font-bold uppercase tracking-wide opacity-70">{d.toLocaleDateString("de-DE", { weekday: "short" }).replace(".", "")}</span>
+      <span className="mt-0.5 font-display text-lg font-semibold">{d.getDate()}</span>
+    </span>
   );
 }

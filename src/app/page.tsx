@@ -1,8 +1,8 @@
 "use client";
 
-import { AREAS, AreaLink, Logo, type LogoKind } from "@/components/Shell";
-import { Card } from "@/components/ui";
-import { daysUntil, eventCountdown, formatEventDate, isCurrent } from "@/lib/dates";
+import { AREAS, AreaLink, type LogoKind } from "@/components/Shell";
+import { DateTile, Empty, Greeting, Panel } from "@/components/ui";
+import { daysUntil, eventCountdown, eventTime, isCurrent } from "@/lib/dates";
 import { BATZI_CALENDAR, batziItems } from "@/lib/sharing";
 import { useTable } from "@/lib/useTable";
 
@@ -37,85 +37,65 @@ function useUpcoming(days = 14) {
       seen.add(id);
       return true;
     })
-    .slice(0, 8);
+    .slice(0, 6);
 }
 
-function greeting() {
-  const h = new Date().getHours();
-  return h < 11 ? "Guten Morgen" : h < 18 ? "Hallo" : "Guten Abend";
-}
+/** Each calendar's dates take the colour of its area. */
+const TILE: Record<LogoKind, string> = {
+  melvin: "bg-indigo-100 text-indigo-900 dark:bg-indigo-950 dark:text-indigo-100",
+  amelie: "bg-teal-100 text-teal-900 dark:bg-teal-950 dark:text-teal-100",
+  gemeinsam: "bg-rose-100 text-rose-900 dark:bg-rose-950 dark:text-rose-100",
+};
 
 export default function Portal() {
   const upcoming = useUpcoming();
   return (
     <>
-      <header className="mb-8">
-        <p className="text-sm font-semibold capitalize text-brand-700 dark:text-brand-300">
-          {new Date().toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long" })}
-        </p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">{greeting()}, ihr zwei 👋</h1>
-        <p className="mt-2 text-stone-500 dark:text-stone-400">Wohin soll es gehen?</p>
-      </header>
+      <Greeting name="ihr zwei 👋" />
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-3">
         {AREAS.map((a) => (
-          <section
+          <AreaLink
             key={a.href}
-            className={`group relative flex flex-col overflow-hidden rounded-3xl bg-gradient-to-br p-5 shadow-soft ring-1 ring-black/5 transition hover:-translate-y-1 hover:shadow-lg dark:ring-white/10 ${a.tone}`}
+            href={a.href}
+            className={`group flex items-center gap-4 rounded-3xl bg-gradient-to-br p-5 shadow-soft ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-lg sm:flex-col sm:items-start sm:p-6 dark:ring-white/10 ${a.tone}`}
           >
-            <AreaLink href={a.href} className="flex items-start gap-4">
-              <span
-                className="block h-16 w-16 shrink-0 overflow-hidden rounded-2xl shadow-soft transition group-hover:-rotate-6"
-                aria-hidden
-              >
-                {a.icon}
-              </span>
-              <span className="min-w-0 pt-1">
-                <span className="block font-display text-xl font-semibold">{a.label}</span>
-                <span className="block text-sm opacity-75">{a.who}</span>
-              </span>
-            </AreaLink>
-            <div className="mt-5 flex flex-wrap gap-2">
-              {a.links.map((l) => (
-                <AreaLink
-                  key={l.href}
-                  href={l.href}
-                  className="rounded-full bg-white/70 px-3 py-1.5 text-sm font-semibold shadow-sm transition hover:bg-white dark:bg-white/10 dark:hover:bg-white/20"
-                >
-                  {l.label}
-                </AreaLink>
-              ))}
-            </div>
-            <AreaLink href={a.href} className="mt-auto pt-5 text-sm font-semibold opacity-80 group-hover:opacity-100">
-              Öffnen →
-            </AreaLink>
-          </section>
+            <span className="block h-14 w-14 shrink-0 overflow-hidden rounded-2xl shadow-soft transition group-hover:-rotate-6" aria-hidden>
+              {a.icon}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-display text-xl font-semibold">{a.label}</span>
+              <span className="block text-sm opacity-70">{a.who}</span>
+            </span>
+            <span aria-hidden className="text-lg opacity-40 transition group-hover:translate-x-1 group-hover:opacity-80 sm:hidden">
+              →
+            </span>
+          </AreaLink>
         ))}
       </div>
 
-      {upcoming.length > 0 && (
-        <Card className="mt-6">
-          <h2 className="mb-2 text-lg font-semibold">📅 Die nächsten zwei Wochen</h2>
-          <ul className="divide-y divide-stone-100 dark:divide-stone-800">
+      <Panel title="Die nächsten zwei Wochen" className="mt-8">
+        {upcoming.length === 0 ? (
+          <Empty>Keine Termine in den nächsten zwei Wochen.</Empty>
+        ) : (
+          <ul className="space-y-1">
             {upcoming.map((e) => (
               <li key={e.key}>
-                <AreaLink href={e.href} className="flex items-center gap-3 py-2.5 text-sm">
-                  <span className="block h-9 w-9 shrink-0 overflow-hidden rounded-xl" title={e.where} aria-hidden>
-                    <Logo of={e.logo} />
-                  </span>
+                <AreaLink href={e.href} className="-mx-2 flex items-center gap-3 rounded-2xl px-2 py-2 transition hover:bg-stone-50 dark:hover:bg-stone-800/50">
+                  <DateTile iso={e.starts_at} className={TILE[e.logo]} />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold">{e.title}</span>
-                    <span className="block text-xs text-stone-500">
-                      {e.where} · {formatEventDate(e)}
+                    <span className="block text-sm text-stone-500 dark:text-stone-400">
+                      {e.where} · {eventTime(e)}
                     </span>
                   </span>
-                  <span className="shrink-0 font-semibold">{eventCountdown(e)}</span>
+                  <span className="shrink-0 text-sm text-stone-500 dark:text-stone-400">{eventCountdown(e)}</span>
                 </AreaLink>
               </li>
             ))}
           </ul>
-        </Card>
-      )}
+        )}
+      </Panel>
     </>
   );
 }
