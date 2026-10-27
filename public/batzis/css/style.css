@@ -271,24 +271,19 @@ dialog[open] { animation: pop .22s cubic-bezier(.2, .9, .3, 1.25); }
 @media (max-width: 700px) { .toolbar-right { margin-left: 0; width: 100%; } .toolbar-right > * { flex: 1; } }
 
 /* ============ Dashboard ============ */
-.hero { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin: 6px 0 24px; }
+.hero { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin: 6px 0 28px; }
 .hero h1 { margin: 4px 0 6px; }
 .hero-avatars { display: flex; flex: none; }
 .hero-avatars .avatar + .avatar { margin-left: -14px; }
 @media (max-width: 520px) { .hero-avatars { display: none; } }
-.dash-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+.dash-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
 .dash-grid > * { min-width: 0; }
-.dash-diary { grid-column: span 7; background: linear-gradient(135deg, var(--rose-s), var(--peach-s)); }
-.dash-photos { grid-column: span 12; }
-.dash-cook { grid-column: span 5; }
-.dash-todos { grid-column: span 7; }
-.dash-shop { grid-column: span 5; }
-.dash-events { grid-column: span 5; }
-.dash-col { grid-column: span 7; display: flex; flex-direction: column; gap: 16px; }
+.dash-diary { background: linear-gradient(135deg, var(--rose-s), var(--peach-s)); }
+.dash-photos { grid-column: 1 / -1; }
+.dash-col { display: flex; flex-direction: column; gap: 20px; }
 .dash-col > .dash-trackers { flex: 1; }
-@media (max-width: 1000px) { .dash-todos, .dash-shop, .dash-events, .dash-col, .dash-diary, .dash-cook { grid-column: span 6; } }
-@media (max-width: 700px) { .dash-grid > * { grid-column: 1 / -1 !important; } }
-.card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+@media (max-width: 700px) { .dash-grid { grid-template-columns: 1fr; gap: 16px; } .dash-col { gap: 16px; } }
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
 .card-head .more { font-size: .88rem; font-weight: 700; color: var(--ink2); text-decoration: none; }
 .card-head .more:hover { color: var(--coral-d); }
 .dash-diary .bubble { margin: 8px 0; max-width: 640px; }

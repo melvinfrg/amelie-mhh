@@ -38,27 +38,15 @@ export const AREAS = [
     href: "/melvin",
     label: "Melvins Zeug",
     icon: <Logo of="melvin" />,
-    who: "Finanzen, Termine, ToDos, Verträge, Lebenslauf",
+    who: "Finanzen, Termine, Verträge",
     tone: "from-indigo-100 to-indigo-50 text-indigo-950 dark:from-indigo-950 dark:to-stone-900 dark:text-indigo-50",
-    links: [
-      { href: "/melvin/finanzen", label: "💶 Finanzen" },
-      { href: "/melvin/termine", label: "📅 Termine" },
-      { href: "/melvin/todos", label: "✅ ToDos" },
-      { href: "/melvin/vertraege", label: "📑 Verträge" },
-    ],
   },
   {
     href: "/studium",
     label: "Amelies Zeug",
     icon: <Logo of="amelie" />,
-    who: "Studium MHH: Termine, Lernen, Kosten",
+    who: "Studium an der MHH",
     tone: "from-teal-100 to-teal-50 text-teal-950 dark:from-teal-950 dark:to-stone-900 dark:text-teal-50",
-    links: [
-      { href: "/termine", label: "📅 Termine" },
-      { href: "/todos", label: "✅ ToDos" },
-      { href: "/lernen", label: "🧠 Lernen" },
-      { href: "/kosten", label: "💶 Kosten" },
-    ],
   },
   {
     href: "/batzis/index.html",
@@ -66,12 +54,6 @@ export const AREAS = [
     icon: <Logo of="gemeinsam" />,
     who: "Unser gemeinsamer Alltag",
     tone: "from-orange-100 to-rose-50 text-rose-950 dark:from-rose-950 dark:to-stone-900 dark:text-rose-50",
-    links: [
-      { href: "/batzis/index.html#/todos", label: "✅ ToDos" },
-      { href: "/batzis/index.html#/einkauf", label: "🛒 Einkauf" },
-      { href: "/batzis/index.html#/kalender", label: "📅 Kalender" },
-      { href: "/batzis/index.html#/tagebuch", label: "💌 Tagebuch" },
-    ],
   },
 ];
 

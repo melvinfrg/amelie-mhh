@@ -89,6 +89,15 @@ export function eventCountdown(e: { starts_at: string; ends_at?: string | null; 
   return countdown(e.starts_at);
 }
 
+/** The time part of an event for lists that already show its day: "10:00", "10:00 – 12:00", "ganztägig" or "bis Fr., 30.10.". */
+export function eventTime(e: { starts_at: string; ends_at?: string | null; all_day?: boolean }) {
+  const time = (iso: string) => new Date(iso).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+  if (e.ends_at && dayKey(e.ends_at) !== dayKey(e.starts_at))
+    return `bis ${new Date(e.ends_at).toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "2-digit" })}`;
+  if (e.all_day) return "ganztägig";
+  return e.ends_at ? `${time(e.starts_at)} – ${time(e.ends_at)}` : time(e.starts_at);
+}
+
 /** Local midnight of a "YYYY-MM-DD" day, as stored for all-day events. */
 export function localMidnight(day: string) {
   const [y, m, d] = day.split("-").map(Number);
