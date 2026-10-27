@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { Button, Card, Empty, ErrorNote, Field, PageHeader, ProgressBar, Select, TextArea, TextInput } from "@/components/ui";
 import { CalendarExport } from "@/components/CalendarExport";
 import { MhhSuggestions } from "@/components/MhhSuggestions";
+import { MonthCalendar } from "@/components/MonthCalendar";
 import { localMidnight, dayKey, daysUntil, eventCountdown, formatEventDate, isCurrent, toLocalInput } from "@/lib/dates";
 import { KIND_LABEL } from "@/lib/labels";
 import { SubjectDot } from "@/lib/subjects";
@@ -25,12 +26,35 @@ const emptyDraft = (): Draft => ({
   all_day: false,
 });
 
+const VIEW_KEY = "termine-ansicht";
+
 export default function TerminePage() {
   const events = useTable("events");
   const subjects = useTable("subjects");
   const [editing, setEditing] = useState<{ id?: string; draft: Draft } | null>(null);
   const [showPast, setShowPast] = useState(false);
   const [showExport, setShowExport] = useState(false);
+  const [view, setView] = useState<"liste" | "kalender">(() => {
+    try {
+      return localStorage.getItem(VIEW_KEY) === "kalender" ? "kalender" : "liste";
+    } catch {
+      return "liste";
+    }
+  });
+
+  function changeView(next: "liste" | "kalender") {
+    setView(next);
+    try {
+      localStorage.setItem(VIEW_KEY, next);
+    } catch {
+      // Not remembered in private mode.
+    }
+  }
+
+  function edit(target: { id?: string; draft: Draft }) {
+    setEditing(target);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   const sorted = [...events.rows].sort((a, b) => a.starts_at.localeCompare(b.starts_at));
   const upcoming = sorted.filter((e) => isCurrent(e) && !e.done);
@@ -39,7 +63,11 @@ export default function TerminePage() {
   async function save(e: FormEvent) {
     e.preventDefault();
     if (!editing) return;
-    const draft = { ...editing.draft, location: editing.draft.location || null, notes: editing.draft.notes || null };
+    const draft = {
+      ...editing.draft,
+      location: editing.draft.location || null,
+      notes: editing.draft.notes || null,
+    };
     if (editing.id) await events.update(editing.id, draft);
     else await events.insert(draft);
     setEditing(null);
@@ -89,7 +117,7 @@ export default function TerminePage() {
             <Button variant="ghost" onClick={() => events.update(ev.id, { done: !ev.done })}>
               {ev.done ? "Wieder öffnen" : "Erledigt"}
             </Button>
-            <Button variant="ghost" onClick={() => setEditing({ id: ev.id, draft: { ...ev } })}>
+            <Button variant="ghost" onClick={() => edit({ id: ev.id, draft: { ...ev } })}>
               Bearbeiten
             </Button>
             <Button variant="danger" onClick={() => confirm(`„${ev.title}“ löschen?`) && events.remove(ev.id)}>
@@ -130,14 +158,27 @@ export default function TerminePage() {
               <TextInput
                 required
                 value={editing.draft.title}
-                onChange={(e) => setEditing({ ...editing, draft: { ...editing.draft, title: e.target.value } })}
+                onChange={(e) =>
+                  setEditing({
+                    ...editing,
+                    draft: { ...editing.draft, title: e.target.value },
+                  })
+                }
                 placeholder="z. B. Anatomie-Testat Bewegungsapparat"
               />
             </Field>
             <Field label="Art">
               <Select
                 value={editing.draft.kind}
-                onChange={(e) => setEditing({ ...editing, draft: { ...editing.draft, kind: e.target.value as EventKind } })}
+                onChange={(e) =>
+                  setEditing({
+                    ...editing,
+                    draft: {
+                      ...editing.draft,
+                      kind: e.target.value as EventKind,
+                    },
+                  })
+                }
               >
                 {Object.entries(KIND_LABEL).map(([k, label]) => (
                   <option key={k} value={k}>
@@ -146,11 +187,27 @@ export default function TerminePage() {
                 ))}
               </Select>
             </Field>
-            <DateFields draft={editing.draft} onChange={(patch) => setEditing({ ...editing, draft: { ...editing.draft, ...patch } })} />
+            <DateFields
+              draft={editing.draft}
+              onChange={(patch) =>
+                setEditing({
+                  ...editing,
+                  draft: { ...editing.draft, ...patch },
+                })
+              }
+            />
             <Field label="Fach">
               <Select
                 value={editing.draft.subject_id ?? ""}
-                onChange={(e) => setEditing({ ...editing, draft: { ...editing.draft, subject_id: e.target.value || null } })}
+                onChange={(e) =>
+                  setEditing({
+                    ...editing,
+                    draft: {
+                      ...editing.draft,
+                      subject_id: e.target.value || null,
+                    },
+                  })
+                }
               >
                 <option value="">–</option>
                 {subjects.rows.map((s) => (
@@ -163,13 +220,23 @@ export default function TerminePage() {
             <Field label="Ort">
               <TextInput
                 value={editing.draft.location ?? ""}
-                onChange={(e) => setEditing({ ...editing, draft: { ...editing.draft, location: e.target.value } })}
+                onChange={(e) =>
+                  setEditing({
+                    ...editing,
+                    draft: { ...editing.draft, location: e.target.value },
+                  })
+                }
               />
             </Field>
             <Field label="Notizen" className="sm:col-span-2">
               <TextArea
                 value={editing.draft.notes ?? ""}
-                onChange={(e) => setEditing({ ...editing, draft: { ...editing.draft, notes: e.target.value } })}
+                onChange={(e) =>
+                  setEditing({
+                    ...editing,
+                    draft: { ...editing.draft, notes: e.target.value },
+                  })
+                }
               />
             </Field>
             <div className="flex gap-2 sm:col-span-2">
@@ -182,23 +249,55 @@ export default function TerminePage() {
         </Card>
       )}
 
-      <div className="space-y-3">
-        {upcoming.length === 0 && events.loaded && <Empty>Keine anstehenden Termine. Leg den ersten an!</Empty>}
-        {upcoming.map(row)}
+      <div className="mb-4 inline-flex rounded-lg border border-slate-200 p-0.5 text-sm dark:border-slate-800" role="tablist">
+        {(["liste", "kalender"] as const).map((v) => (
+          <button
+            key={v}
+            role="tab"
+            aria-selected={view === v}
+            onClick={() => changeView(v)}
+            className={`rounded-md px-3 py-1.5 font-medium ${view === v ? "bg-teal-700 text-white" : "text-slate-600 dark:text-slate-300"}`}
+          >
+            {v === "liste" ? "☰ Liste" : "📅 Kalender"}
+          </button>
+        ))}
       </div>
 
-      {past.length > 0 && (
-        <div className="mt-8">
-          <button className="text-sm font-medium text-slate-500" onClick={() => setShowPast(!showPast)}>
-            {showPast ? "▾" : "▸"} Vergangen & erledigt ({past.length})
-          </button>
-          {showPast && <div className="mt-3 space-y-3">{past.map(row)}</div>}
-        </div>
+      {view === "kalender" ? (
+        <MonthCalendar
+          events={events.rows}
+          subjects={subjects.rows}
+          onEdit={(ev) => edit({ id: ev.id, draft: { ...ev } })}
+          onNew={(day) => {
+            const [y, m, d] = day.split("-").map(Number);
+            edit({
+              draft: {
+                ...emptyDraft(),
+                starts_at: new Date(y, m - 1, d, 9).toISOString(),
+              },
+            });
+          }}
+        />
+      ) : (
+        <>
+          <div className="space-y-3">
+            {upcoming.length === 0 && events.loaded && <Empty>Keine anstehenden Termine. Leg den ersten an!</Empty>}
+            {upcoming.map(row)}
+          </div>
+
+          {past.length > 0 && (
+            <div className="mt-8">
+              <button className="text-sm font-medium text-slate-500" onClick={() => setShowPast(!showPast)}>
+                {showPast ? "▾" : "▸"} Vergangen & erledigt ({past.length})
+              </button>
+              {showPast && <div className="mt-3 space-y-3">{past.map(row)}</div>}
+            </div>
+          )}
+        </>
       )}
       {upcoming.length > 0 && (
         <p className="mt-6 text-xs text-slate-500">
-          Ø Vorbereitung aller anstehenden Termine:{" "}
-          {Math.round(upcoming.reduce((s, e) => s + e.progress, 0) / upcoming.length)}%
+          Ø Vorbereitung aller anstehenden Termine: {Math.round(upcoming.reduce((s, e) => s + e.progress, 0) / upcoming.length)}%
         </p>
       )}
       {upcoming.length > 0 && (
@@ -241,7 +340,9 @@ function DateFields({ draft, onChange }: { draft: Draft; onChange: (patch: Parti
           min={allDay ? dayKey(draft.starts_at) : toLocalInput(draft.starts_at)}
           value={draft.ends_at ? (allDay ? dayKey(draft.ends_at) : toLocalInput(draft.ends_at)) : ""}
           onChange={(e) =>
-            onChange({ ends_at: e.target.value ? (allDay ? localMidnight(e.target.value) : new Date(e.target.value).toISOString()) : null })
+            onChange({
+              ends_at: e.target.value ? (allDay ? localMidnight(e.target.value) : new Date(e.target.value).toISOString()) : null,
+            })
           }
         />
       </Field>
