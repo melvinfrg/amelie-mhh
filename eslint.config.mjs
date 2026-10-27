@@ -14,6 +14,10 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Copied OCR bundles, see scripts/copy-tesseract.mjs.
     "public/tesseract/**",
+    // Die Batzi's: plain browser JS, copied as is from their own repository.
+    "public/batzis/**",
+    // Supabase Edge Functions run on Deno.
+    "supabase/functions/**",
   ]),
 ]);
 
