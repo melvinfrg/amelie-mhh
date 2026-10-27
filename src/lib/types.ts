@@ -16,6 +16,27 @@ export interface StudyEvent extends Base {
   notes: string | null;
   progress: number;
   done: boolean;
+  /** Optional end; for all-day events the last day (inclusive). */
+  ends_at?: string | null;
+  /** All-day events are stored at local midnight of their first day. */
+  all_day?: boolean;
+  /** Where a suggested event came from, e.g. "mhh:quintil:2026-2"; keeps suggestions from coming back. */
+  source?: string | null;
+}
+
+export interface FeedFilter {
+  /** Empty or missing means all kinds. */
+  kinds?: EventKind[];
+  /** Subject ids; empty or missing means all, "none" stands for events without a subject. */
+  subjects?: string[];
+  /** Leave out events marked as done. */
+  hideDone?: boolean;
+}
+
+export interface CalendarFeed extends Base {
+  token: string;
+  name: string;
+  filter: FeedFilter;
 }
 
 export interface Todo extends Base {
@@ -147,11 +168,13 @@ export interface Tables {
   questions: Question;
   reviews: Review;
   expenses: Expense;
+  calendar_feeds: CalendarFeed;
   settings: Settings;
 }
 
 export type TableName = keyof Tables;
 
+/** Tables in the backup, parents first. Calendar feeds are left out: their links are secrets of one account. */
 export const TABLES: TableName[] = [
   "subjects",
   "topics",

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button, Card, Empty, PageHeader } from "@/components/ui";
-import { countdown, daysUntil, formatDate } from "@/lib/dates";
+import { countdown, daysUntil, eventCountdown, formatEventDate, isCurrent } from "@/lib/dates";
 import { KIND_LABEL } from "@/lib/labels";
 import { buildQueue, isNew } from "@/lib/learning";
 import { useSettings } from "@/lib/settings";
@@ -23,7 +23,7 @@ export default function Home() {
   const { settings } = useSettings();
 
   const upcoming = events.rows
-    .filter((e) => !e.done && daysUntil(e.starts_at) >= 0)
+    .filter((e) => !e.done && isCurrent(e))
     .sort((a, b) => a.starts_at.localeCompare(b.starts_at))
     .slice(0, 5);
   const nextExam = upcoming.find((e) => e.kind === "pruefung" || e.kind === "testat");
@@ -43,9 +43,9 @@ export default function Home() {
           <p className="text-xs uppercase tracking-wide text-slate-500">Nächste Prüfung</p>
           {nextExam ? (
             <>
-              <p className="mt-2 text-3xl font-semibold text-teal-800 dark:text-teal-300">{countdown(nextExam.starts_at)}</p>
+              <p className="mt-2 text-3xl font-semibold text-teal-800 dark:text-teal-300">{eventCountdown(nextExam)}</p>
               <p className="mt-1 font-medium">{nextExam.title}</p>
-              <p className="text-sm text-slate-500">{formatDate(nextExam.starts_at, true)}</p>
+              <p className="text-sm text-slate-500">{formatEventDate(nextExam)}</p>
               <p className="mt-2 text-xs text-slate-500">Vorbereitung: {nextExam.progress}%</p>
             </>
           ) : (
@@ -90,10 +90,10 @@ export default function Home() {
                   <div className="min-w-0">
                     <p className="truncate font-medium">{e.title}</p>
                     <p className="text-xs text-slate-500">
-                      {KIND_LABEL[e.kind]} · {formatDate(e.starts_at, true)}
+                      {KIND_LABEL[e.kind]} · {formatEventDate(e)}
                     </p>
                   </div>
-                  <span className="shrink-0 font-medium">{countdown(e.starts_at)}</span>
+                  <span className="shrink-0 font-medium">{eventCountdown(e)}</span>
                 </li>
               ))}
             </ul>

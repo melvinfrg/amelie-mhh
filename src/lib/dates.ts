@@ -54,3 +54,43 @@ export function formatInterval(from: Date, to: Date) {
   if (months < 12) return `${months} Mon`;
   return `${(days / 365).toFixed(1)} J`;
 }
+
+/** Last moment that still belongs to an event: its end, or the end of its day for all-day events. */
+export function eventEnd(e: { starts_at: string; ends_at?: string | null; all_day?: boolean }) {
+  const end = new Date(e.ends_at ?? e.starts_at);
+  if (e.all_day) end.setHours(23, 59, 59, 999);
+  return end;
+}
+
+/** True while an event is running or still ahead. */
+export function isCurrent(e: { starts_at: string; ends_at?: string | null; all_day?: boolean }) {
+  return e.ends_at || e.all_day ? eventEnd(e) >= startOfDay() : daysUntil(e.starts_at) >= 0;
+}
+
+export function formatEventDate(e: { starts_at: string; ends_at?: string | null; all_day?: boolean }) {
+  if (e.all_day) {
+    const end = e.ends_at && dayKey(e.ends_at) !== dayKey(e.starts_at) ? ` – ${formatDate(e.ends_at)}` : "";
+    return `${formatDate(e.starts_at)}${end}`;
+  }
+  if (!e.ends_at) return formatDate(e.starts_at, true);
+  const sameDay = dayKey(e.ends_at) === dayKey(e.starts_at);
+  const endText = sameDay
+    ? new Date(e.ends_at).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })
+    : formatDate(e.ends_at, true);
+  return `${formatDate(e.starts_at, true)} – ${endText}`;
+}
+
+/** Countdown that also covers running multi-day events, e.g. "läuft noch 12 Tage". */
+export function eventCountdown(e: { starts_at: string; ends_at?: string | null; all_day?: boolean }) {
+  if (daysUntil(e.starts_at) < 0 && (e.ends_at || e.all_day) && eventEnd(e) >= startOfDay()) {
+    const left = daysUntil(eventEnd(e).toISOString());
+    return left === 0 ? "endet heute" : `läuft noch ${left} ${left === 1 ? "Tag" : "Tage"}`;
+  }
+  return countdown(e.starts_at);
+}
+
+/** Local midnight of a "YYYY-MM-DD" day, as stored for all-day events. */
+export function localMidnight(day: string) {
+  const [y, m, d] = day.split("-").map(Number);
+  return new Date(y, m - 1, d).toISOString();
+}
