@@ -3,8 +3,8 @@
   "short_name": "Batzi's",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#fff6ee",
-  "theme_color": "#fff6ee",
+  "background_color": "#fffaf5",
+  "theme_color": "#fffaf5",
   "lang": "de",
   "icons": [
     { "src": "assets/icon.svg?v=3", "sizes": "any", "type": "image/svg+xml" },

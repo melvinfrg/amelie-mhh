@@ -1,6 +1,6 @@
 /* ============ Die Batzi's – warm & verspielt ============ */
 :root {
-  --bg: #fff6ee;
+  --bg: #fffaf5;
   --bg2: #ffeedf;
   --card: #ffffff;
   --card2: #fffaf5;
@@ -20,9 +20,9 @@
   --rose: #ffd5e4;  --rose-s: #fff0f5;
 
   --good: #2f9c6d; --bad: #e04b40; --warn: #d98a1d;
-  --r-lg: 26px; --r: 18px; --r-sm: 12px;
-  --shadow: 0 1px 0 rgba(120, 70, 50, .04), 0 10px 30px -16px rgba(170, 90, 60, .35);
-  --shadow-lift: 0 2px 0 rgba(120, 70, 50, .04), 0 18px 40px -18px rgba(170, 90, 60, .45);
+  --r-lg: 28px; --r: 18px; --r-sm: 12px;
+  --shadow: 0 2px 4px rgba(160, 110, 70, .04), 0 18px 40px -20px rgba(160, 110, 70, .25);
+  --shadow-lift: 0 2px 4px rgba(160, 110, 70, .05), 0 22px 46px -20px rgba(160, 110, 70, .35);
   --font-h: 'Fredoka', ui-rounded, system-ui, sans-serif;
   --font: 'Nunito', system-ui, -apple-system, sans-serif;
   color-scheme: light;
@@ -51,7 +51,7 @@ body {
   margin: 0; background: var(--bg); color: var(--ink);
   font-family: var(--font); font-size: 16px; line-height: 1.45;
   -webkit-font-smoothing: antialiased;
-  background-image: radial-gradient(circle at 10% -10%, var(--bg2) 0, transparent 40%), radial-gradient(circle at 110% 10%, var(--lilac-s) 0, transparent 35%);
+  background-image: radial-gradient(circle at 100% 0%, var(--bg2) 0, transparent 40%);
   background-attachment: fixed;
 }
 h1, h2, h3 { font-family: var(--font-h); font-weight: 600; margin: 0; letter-spacing: -.01em; line-height: 1.2; }

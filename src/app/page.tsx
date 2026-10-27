@@ -58,7 +58,7 @@ export default function Portal() {
           <AreaLink
             key={a.href}
             href={a.href}
-            className={`group flex items-center gap-4 rounded-3xl bg-gradient-to-br p-5 shadow-soft ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-lg sm:flex-col sm:items-start sm:p-6 dark:ring-white/10 ${a.tone}`}
+            className={`group flex items-center gap-4 rounded-[1.75rem] bg-gradient-to-br p-5 shadow-soft transition hover:-translate-y-0.5 hover:shadow-lg sm:flex-col sm:items-start sm:p-6 dark:ring-1 dark:ring-white/10 ${a.tone}`}
           >
             <span className="block h-14 w-14 shrink-0 overflow-hidden rounded-2xl shadow-soft transition group-hover:-rotate-6" aria-hidden>
               {a.icon}

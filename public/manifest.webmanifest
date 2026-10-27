@@ -3,7 +3,7 @@
   "short_name": "A & M",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#fff6ee",
+  "background_color": "#fffaf5",
   "theme_color": "#0f766e",
   "icons": [
     {
