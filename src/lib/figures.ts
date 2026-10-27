@@ -14,7 +14,7 @@ export const LEVELS: { value: number; label: string; tone: string }[] = [
 ];
 
 /** Scales an image down and re-encodes it as JPEG, so uploads stay small. */
-async function shrink(file: File, maxSide: number): Promise<HTMLCanvasElement> {
+export async function shrink(file: File, maxSide: number): Promise<HTMLCanvasElement> {
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas");

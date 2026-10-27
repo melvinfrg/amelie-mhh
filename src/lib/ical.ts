@@ -28,7 +28,7 @@ export function toIcs(events: StudyEvent[]) {
   return lines.join("\r\n");
 }
 
-export function download(filename: string, content: string, type: string) {
+export function download(filename: string, content: BlobPart, type: string) {
   const url = URL.createObjectURL(new Blob([content], { type }));
   const a = document.createElement("a");
   a.href = url;

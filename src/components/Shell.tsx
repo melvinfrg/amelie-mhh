@@ -16,6 +16,7 @@ const NAV = [
   { href: "/lernen/abbildungen", label: "Abbildungen", icon: "🦴" },
   { href: "/lernen/anki", label: "Anki", icon: "🃏" },
   { href: "/lernen/statistik", label: "Statistik", icon: "📊" },
+  { href: "/kosten", label: "Kosten", icon: "💶" },
   { href: "/links", label: "Links", icon: "🔗" },
   { href: "/einstellungen", label: "Einstellungen", icon: "⚙️" },
 ];
