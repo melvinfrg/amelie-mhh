@@ -9,7 +9,15 @@ import { AuthGate } from "./AuthGate";
 interface NavItem {
   href: string;
   label: string;
-  icon: string;
+  icon: ReactNode;
+}
+
+/** The site logo: A for Amelie, M for Melvin and 2024. In each person's area the other letter is faded. */
+export type LogoKind = "gemeinsam" | "melvin" | "amelie";
+
+export function Logo({ of, className = "h-full w-full" }: { of: LogoKind; className?: string }) {
+  // eslint-disable-next-line @next/next/no-img-element -- a small static SVG, nothing to optimize
+  return <img src={`/logos/${of}.svg`} alt="" draggable={false} className={className} />;
 }
 
 const STUDIUM: NavItem[] = [
@@ -29,7 +37,7 @@ export const AREAS = [
   {
     href: "/melvin",
     label: "Melvins Zeug",
-    icon: "🧑‍💻",
+    icon: <Logo of="melvin" />,
     who: "Finanzen, Termine, ToDos, Verträge, Lebenslauf",
     tone: "from-indigo-100 to-indigo-50 text-indigo-950 dark:from-indigo-950 dark:to-stone-900 dark:text-indigo-50",
     links: [
@@ -42,7 +50,7 @@ export const AREAS = [
   {
     href: "/studium",
     label: "Amelies Zeug",
-    icon: "🩺",
+    icon: <Logo of="amelie" />,
     who: "Studium MHH: Termine, Lernen, Kosten",
     tone: "from-teal-100 to-teal-50 text-teal-950 dark:from-teal-950 dark:to-stone-900 dark:text-teal-50",
     links: [
@@ -55,7 +63,7 @@ export const AREAS = [
   {
     href: "/batzis/index.html",
     label: "Die Batzi's",
-    icon: "🐻",
+    icon: <Logo of="gemeinsam" />,
     who: "Unser gemeinsamer Alltag",
     tone: "from-orange-100 to-rose-50 text-rose-950 dark:from-rose-950 dark:to-stone-900 dark:text-rose-50",
     links: [
@@ -77,15 +85,15 @@ const MELVIN: NavItem[] = [
   { href: "/melvin/vertraege", label: "Verträge", icon: "📑" },
   { href: "/melvin/lebenslauf", label: "Lebenslauf", icon: "📄" },
   { href: "/melvin/notizen", label: "Notizen", icon: "📝" },
-  { href: "/batzis/index.html", label: "Die Batzi's", icon: "🐻" },
+  { href: "/batzis/index.html", label: "Die Batzi's", icon: <Logo of="gemeinsam" /> },
 ];
 
-function area(pathname: string): { id: Area; icon: string; brand: ReactNode; nav: NavItem[] } {
+function area(pathname: string): { id: Area; icon: LogoKind; brand: ReactNode; nav: NavItem[] } {
   if (pathname === "/")
-    return { id: "portal", icon: "🏡", brand: <>Amelie <span className="text-brand-600 dark:text-brand-400">&amp;</span> Melvin</>, nav: PORTAL };
+    return { id: "portal", icon: "gemeinsam", brand: <>Amelie <span className="text-brand-600 dark:text-brand-400">&amp;</span> Melvin</>, nav: PORTAL };
   if (pathname.startsWith("/melvin"))
-    return { id: "melvin", icon: "🧑‍💻", brand: <>Melvins <span className="text-brand-600 dark:text-brand-400">Zeug</span></>, nav: MELVIN };
-  return { id: "studium", icon: "🩺", brand: <>Studium <span className="text-brand-700 dark:text-brand-400">MHH</span></>, nav: STUDIUM };
+    return { id: "melvin", icon: "melvin", brand: <>Melvins <span className="text-brand-600 dark:text-brand-400">Zeug</span></>, nav: MELVIN };
+  return { id: "studium", icon: "amelie", brand: <>Studium <span className="text-brand-700 dark:text-brand-400">MHH</span></>, nav: STUDIUM };
 }
 
 /** Die Batzi's are static files, not a Next.js route, so they need a full page load. */
@@ -122,10 +130,10 @@ export function Shell({ children }: { children: ReactNode }) {
               <div className="flex items-center gap-3 px-4 py-4 md:px-5 md:py-6">
                 <Link
                   href="/"
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-brand-100 text-xl shadow-soft transition hover:-rotate-6 dark:bg-brand-950"
+                  className="block h-10 w-10 shrink-0 overflow-hidden rounded-xl shadow-soft transition hover:-rotate-6"
                   aria-label="Alle Bereiche"
                 >
-                  <span aria-hidden>{icon}</span>
+                  <Logo of={icon} />
                 </Link>
                 <div className="min-w-0">
                   <Link href={nav[0].href} className="block truncate font-display text-lg font-semibold tracking-tight">
@@ -149,7 +157,7 @@ export function Shell({ children }: { children: ReactNode }) {
                         : "text-stone-600 hover:bg-white/70 dark:text-stone-300 dark:hover:bg-stone-800/60"
                     }`}
                   >
-                    <span aria-hidden className="w-5 text-center text-base">
+                    <span aria-hidden className="grid h-5 w-5 place-items-center text-base">
                       {item.icon}
                     </span>
                     {item.label}

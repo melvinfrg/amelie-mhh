@@ -1,6 +1,6 @@
 "use client";
 
-import { AREAS, AreaLink } from "@/components/Shell";
+import { AREAS, AreaLink, Logo, type LogoKind } from "@/components/Shell";
 import { Card } from "@/components/ui";
 import { daysUntil, eventCountdown, formatEventDate, isCurrent } from "@/lib/dates";
 import { BATZI_CALENDAR, batziItems } from "@/lib/sharing";
@@ -12,7 +12,7 @@ interface Upcoming {
   starts_at: string;
   ends_at?: string | null;
   all_day?: boolean;
-  icon: string;
+  logo: LogoKind;
   where: string;
   href: string;
 }
@@ -23,9 +23,9 @@ function useUpcoming(days = 14) {
   const melvin = useTable("melvin_events");
   const batzis = useTable("batzi_events");
   const all: Upcoming[] = [
-    ...melvin.rows.filter((e) => !e.done).map((e) => ({ ...e, key: `m${e.id}`, icon: "🧑‍💻", where: "Melvin", href: "/melvin/termine" })),
-    ...studium.rows.filter((e) => !e.done).map((e) => ({ ...e, key: `s${e.id}`, icon: "🩺", where: "Studium", href: "/termine" })),
-    ...batziItems(batzis.rows).map((e) => ({ ...e, key: `b${e.id}`, icon: "🐻", where: "Batzi's", href: BATZI_CALENDAR })),
+    ...melvin.rows.filter((e) => !e.done).map((e) => ({ ...e, key: `m${e.id}`, logo: "melvin" as const, where: "Melvin", href: "/melvin/termine" })),
+    ...studium.rows.filter((e) => !e.done).map((e) => ({ ...e, key: `s${e.id}`, logo: "amelie" as const, where: "Studium", href: "/termine" })),
+    ...batziItems(batzis.rows).map((e) => ({ ...e, key: `b${e.id}`, logo: "gemeinsam" as const, where: "Batzi's", href: BATZI_CALENDAR })),
   ];
   const seen = new Set<string>();
   return all
@@ -65,7 +65,7 @@ export default function Portal() {
           >
             <AreaLink href={a.href} className="flex items-start gap-4">
               <span
-                className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-white/80 text-4xl shadow-soft transition group-hover:-rotate-6 dark:bg-white/10"
+                className="block h-16 w-16 shrink-0 overflow-hidden rounded-2xl shadow-soft transition group-hover:-rotate-6"
                 aria-hidden
               >
                 {a.icon}
@@ -100,8 +100,8 @@ export default function Portal() {
             {upcoming.map((e) => (
               <li key={e.key}>
                 <AreaLink href={e.href} className="flex items-center gap-3 py-2.5 text-sm">
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-stone-100 text-lg dark:bg-stone-800" title={e.where} aria-hidden>
-                    {e.icon}
+                  <span className="block h-9 w-9 shrink-0 overflow-hidden rounded-xl" title={e.where} aria-hidden>
+                    <Logo of={e.logo} />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold">{e.title}</span>
