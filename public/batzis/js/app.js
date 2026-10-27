@@ -48,6 +48,8 @@ async function boot() {
 async function startApp(user) {
   S.user = user;
   if (!isDemo && !(await db.isMember())) return renderNotMember(user.email);
+  // Umgezogene Sachen, die auf dieses Konto gewartet haben, übernehmen (siehe umzug.html).
+  if (!isDemo) await db.claim().catch(console.error);
   await loadAll();
   if (!myProfile()) await profileDialog(true);
   renderShell();
