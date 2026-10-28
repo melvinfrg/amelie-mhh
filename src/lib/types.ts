@@ -22,6 +22,8 @@ export interface StudyEvent extends Base {
   all_day?: boolean;
   /** Where a suggested event came from, e.g. "mhh:quintil:2026-2"; keeps suggestions from coming back. */
   source?: string | null;
+  /** When the push reminder 3 months before an exam went out (set by /api/erinnerungen). */
+  reminded_at?: string | null;
 }
 
 export interface FeedFilter {

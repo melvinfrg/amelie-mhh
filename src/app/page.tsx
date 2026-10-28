@@ -1,5 +1,6 @@
 "use client";
 
+import { ExamReminder } from "@/components/ExamReminder";
 import { AREAS, AreaLink, type LogoKind } from "@/components/Shell";
 import { DateTile, Empty, Greeting, Panel } from "@/components/ui";
 import { daysUntil, eventCountdown, eventTime, isCurrent } from "@/lib/dates";
@@ -52,6 +53,8 @@ export default function Portal() {
   return (
     <>
       <Greeting name="ihr zwei 👋" />
+
+      <ExamReminder className="mb-6" />
 
       <div className="grid gap-4 sm:grid-cols-3">
         {AREAS.map((a) => (

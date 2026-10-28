@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ExamReminder } from "@/components/ExamReminder";
 import { Button, DateTile, Empty, Greeting, Panel, ProgressBar } from "@/components/ui";
 import { countdown, daysUntil, eventCountdown, eventTime, formatEventDate, isCurrent } from "@/lib/dates";
 import { KIND_LABEL } from "@/lib/labels";
@@ -33,6 +34,8 @@ export default function Home() {
   return (
     <>
       <Greeting name="Amelie 👋" />
+
+      <ExamReminder className="mb-5" />
 
       <div className="grid gap-5 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2">
