@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { Button, Card, Field, PageHeader, TextInput } from "@/components/ui";
 import { db } from "@/lib/db";
 import { download } from "@/lib/ical";
-import { disablePush, enablePush, pushState, type PushState } from "@/lib/push";
+import { createPushSetup, disablePush, enablePush, pushState, type PushState } from "@/lib/push";
+import { hasSupabase } from "@/lib/supabase";
 import { useSettings } from "@/lib/settings";
 import { TABLES, type TableName } from "@/lib/types";
 import { resetCache } from "@/lib/useTable";
@@ -17,6 +18,42 @@ const PUSH_TEXT: Record<PushState, string> = {
   unsupported: "Dieser Browser kann keine Push-Benachrichtigungen empfangen.",
   unconfigured: "Push-Benachrichtigungen sind auf dem Server noch nicht eingerichtet.",
 };
+
+/** Shown until the keys are set in Vercel: creates them in this browser, with the SQL line for Supabase. */
+function PushSetup() {
+  const [setup, setSetup] = useState<Awaited<ReturnType<typeof createPushSetup>> | null>(null);
+  const lines = setup ? [...Object.entries(setup.env).map(([k, v]) => [k, v]), ["SQL", setup.sql]] : [];
+  return (
+    <div className="space-y-3 rounded-2xl bg-stone-50 p-3 text-sm dark:bg-stone-800/50">
+      <p className="font-semibold">Einmalig einrichten</p>
+      <ol className="list-decimal space-y-1 pl-5 text-stone-600 dark:text-stone-300">
+        <li>Schlüssel erzeugen (passiert nur in diesem Browser).</li>
+        <li>In Vercel unter Settings → Environment Variables die drei Werte eintragen.</li>
+        <li>In Supabase im SQL-Editor erst <code>supabase/migrations/0012_pruefungserinnerung.sql</code> ausführen, dann die SQL-Zeile.</li>
+        <li>In Vercel neu deployen. Danach steht hier der Knopf zum Einschalten.</li>
+      </ol>
+      {!setup ? (
+        <Button variant="secondary" onClick={async () => setSetup(await createPushSetup())}>
+          🔑 Schlüssel erzeugen
+        </Button>
+      ) : (
+        <dl className="space-y-2">
+          {lines.map(([k, v]) => (
+            <div key={k}>
+              <dt className="flex items-center justify-between gap-2 font-semibold">
+                {k}
+                <button type="button" className="text-xs font-semibold text-brand-700 dark:text-brand-300" onClick={() => navigator.clipboard?.writeText(v)}>
+                  Kopieren
+                </button>
+              </dt>
+              <dd className="break-all font-mono text-xs">{v}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+    </div>
+  );
+}
 
 function PushCard() {
   const [state, setState] = useState<PushState | null>(null);
@@ -47,6 +84,7 @@ function PushCard() {
         erinnert werden soll.
       </p>
       {state && <p className="text-sm">{PUSH_TEXT[state]}</p>}
+      {state === "unconfigured" && hasSupabase && <PushSetup />}
       {(state === "on" || state === "off") && (
         <Button variant={state === "on" ? "secondary" : "primary"} onClick={toggle} disabled={busy}>
           {state === "on" ? "Ausschalten" : "🔔 Einschalten"}

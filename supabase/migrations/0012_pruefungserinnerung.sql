@@ -37,16 +37,25 @@ $$;
 create trigger events_reset_reminder before update of starts_at on events
   for each row execute function public.events_reset_reminder();
 
--- The cron job has no login. It proves itself with CRON_SECRET (set in Vercel); only its SHA-256 is stored here,
--- so these functions hand out nothing without the secret.
+-- The cron job has no login. It proves itself with CRON_SECRET (set in Vercel); only the secret's SHA-256 is stored,
+-- in this one-row table that nobody can read through the API. Einstellungen → Benachrichtigungen shows the line to fill it.
+create table cron_secret (
+  id boolean primary key default true check (id),
+  hash text not null
+);
+alter table cron_secret enable row level security;
+revoke all on cron_secret from anon, authenticated;
+
 create function public.check_cron_token(cron_token text)
 returns void
 language plpgsql
 set search_path = ''
 as $$
 begin
-  if encode(sha256(convert_to(coalesce(cron_token, ''), 'UTF8')), 'hex')
-     <> 'f03c21c7ea033a23235d791e4a4a934ca3fde0159ab7fd32eb16fd11ad60f2c1' then
+  if not exists (
+    select 1 from public.cron_secret
+    where hash = encode(sha256(convert_to(coalesce(cron_token, ''), 'UTF8')), 'hex')
+  ) then
     raise exception 'not allowed';
   end if;
 end;

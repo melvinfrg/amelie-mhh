@@ -62,3 +62,25 @@ export async function disablePush() {
   await supabase().from("push_subscriptions").delete().eq("endpoint", sub.endpoint);
   await sub.unsubscribe();
 }
+
+function base64url(bytes: ArrayBuffer | Uint8Array) {
+  return btoa(String.fromCharCode(...new Uint8Array(bytes))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+/**
+ * One-time setup, all in this browser: a VAPID key pair for sending pushes, the cron secret, and the SQL line that
+ * stores the secret's hash in Supabase. Nothing is sent anywhere.
+ */
+export async function createPushSetup() {
+  const pair = (await crypto.subtle.generateKey({ name: "ECDH", namedCurve: "P-256" }, true, ["deriveBits"])) as CryptoKeyPair;
+  const publicKey = base64url(await crypto.subtle.exportKey("raw", pair.publicKey));
+  const privateKey = (await crypto.subtle.exportKey("jwk", pair.privateKey)).d!;
+  const cronSecret = base64url(crypto.getRandomValues(new Uint8Array(32)));
+  const hash = [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(cronSecret)))]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return {
+    env: { NEXT_PUBLIC_VAPID_PUBLIC_KEY: publicKey, VAPID_PRIVATE_KEY: privateKey, CRON_SECRET: cronSecret },
+    sql: `insert into cron_secret (hash) values ('${hash}') on conflict (id) do update set hash = excluded.hash;`,
+  };
+}
