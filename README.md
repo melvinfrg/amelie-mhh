@@ -18,6 +18,7 @@ Eine Seite, ein Login, drei Bereiche:
 
 - **Übersicht:** nächste Prüfung mit Countdown, heute fällige Fragen, Lernserie, offene To-dos.
 - **Termine:** Prüfungen, Testate, Fristen mit Countdown und Vorbereitungsstand; Export als `.ics` für den Handy-Kalender.
+- **Prüfungserinnerung:** 3 Monate vor jeder Prüfung erscheint auf der Startseite (`/` und `/studium`) ein Hinweis, bis er weggeklickt wird, und es kommt einmal eine Push-Benachrichtigung. Push wird pro Gerät unter *Einstellungen → Benachrichtigungen* eingeschaltet (iPhone: nur in der App vom Home-Bildschirm, ab iOS 16.4). Ein täglicher Vercel-Cron ruft `/api/erinnerungen` auf (`vercel.json`); die Datenbank gibt die fälligen Prüfungen nur mit `CRON_SECRET` heraus (`supabase/migrations/0012_pruefungserinnerung.sql`). Wird eine Prüfung auf mehr als 3 Monate verschoben, kommt die Erinnerung später noch einmal.
 - **To-dos:** mit Fälligkeit, Priorität und Fach.
 - **Kosten & Belege:** Ausgaben fürs Studium mit Foto oder PDF des Belegs, Summe pro Jahr und Kategorie, Export als CSV oder als ZIP mit allen Belegen für die Steuererklärung. Belege liegen im privaten Supabase-Speicher (`receipts`).
 - **Links:** nach Kategorien, mit Vorschlägen (AMBOSS, via medici, Kenhub, AnkiWeb, IMPP …).
@@ -50,7 +51,8 @@ Ohne Supabase-Zugangsdaten läuft die App im **Demo-Modus**: Alles wird nur im B
 3. Unter *Authentication → Providers → Email* E-Mail-Login aktiviert lassen. Nachdem Amelies Konto angelegt ist, unter *Authentication → Sign In / Providers* „Allow new users to sign up“ ausschalten.
 4. Auf [vercel.com](https://vercel.com) das GitHub-Repo importieren und die Umgebungsvariablen aus `.env.example` setzen (Werte aus *Supabase → Project Settings → API*).
 5. Für die KI-Fragen in Vercel zusätzlich `ANTHROPIC_API_KEY` (Typ *Sensitive*) setzen, Schlüssel von [platform.claude.com](https://platform.claude.com). Die Schnittstelle `/api/generate` nimmt nur Anfragen angemeldeter Nutzer an.
-6. Fertig. Auf dem Handy lässt sich die Seite über „Zum Home-Bildschirm“ wie eine App installieren.
+6. Für die Prüfungserinnerung `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` und `CRON_SECRET` setzen (siehe `.env.example`).
+7. Fertig. Auf dem Handy lässt sich die Seite über „Zum Home-Bildschirm“ wie eine App installieren.
 
 ## Geplant
 

@@ -1,12 +1,61 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button, Card, Field, PageHeader, TextInput } from "@/components/ui";
 import { db } from "@/lib/db";
 import { download } from "@/lib/ical";
+import { disablePush, enablePush, pushState, type PushState } from "@/lib/push";
 import { useSettings } from "@/lib/settings";
 import { TABLES, type TableName } from "@/lib/types";
 import { resetCache } from "@/lib/useTable";
+
+const PUSH_TEXT: Record<PushState, string> = {
+  on: "Auf diesem Gerät eingeschaltet.",
+  off: "Auf diesem Gerät ausgeschaltet.",
+  denied: "Benachrichtigungen sind für diese Seite blockiert. Erlauben lässt sich das in den Einstellungen des Browsers bzw. unter iOS-Einstellungen → Mitteilungen.",
+  install: "Auf dem iPhone geht das nur in der App: Seite über Teilen → „Zum Home-Bildschirm“ installieren, dort öffnen und hier einschalten.",
+  unsupported: "Dieser Browser kann keine Push-Benachrichtigungen empfangen.",
+  unconfigured: "Push-Benachrichtigungen sind auf dem Server noch nicht eingerichtet.",
+};
+
+function PushCard() {
+  const [state, setState] = useState<PushState | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    pushState().then(setState, () => setState("unsupported"));
+  }, []);
+
+  async function toggle() {
+    setBusy(true);
+    setError(null);
+    try {
+      if (state === "on") await disablePush();
+      else await enablePush();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+    setState(await pushState().catch(() => "unsupported" as const));
+    setBusy(false);
+  }
+
+  return (
+    <Card className="mb-4 space-y-3">
+      <h2 className="font-medium">Benachrichtigungen</h2>
+      <p className="text-sm text-stone-500">
+        3 Monate vor jeder Prüfung kommt eine Push-Erinnerung aufs Handy, und auf der Startseite erscheint ein Hinweis. Einschalten auf jedem Gerät, das
+        erinnert werden soll.
+      </p>
+      {state && <p className="text-sm">{PUSH_TEXT[state]}</p>}
+      {(state === "on" || state === "off") && (
+        <Button variant={state === "on" ? "secondary" : "primary"} onClick={toggle} disabled={busy}>
+          {state === "on" ? "Ausschalten" : "🔔 Einschalten"}
+        </Button>
+      )}
+      {error && <p className="text-sm text-rose-600">{error}</p>}
+    </Card>
+  );
+}
 
 export default function EinstellungenPage() {
   const { settings, save } = useSettings();
@@ -93,6 +142,8 @@ export default function EinstellungenPage() {
           </Field>
         )}
       </Card>
+
+      <PushCard />
 
       <Card className="space-y-3">
         <h2 className="font-medium">Datensicherung</h2>
