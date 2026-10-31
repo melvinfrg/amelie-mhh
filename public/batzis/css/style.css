@@ -437,6 +437,11 @@ a.card.trip-hero { display: flex; align-items: center; gap: 18px; margin-bottom:
 .trip-cover { background: linear-gradient(135deg, var(--sky), var(--mint)); background-size: cover; background-position: center; display: grid; place-items: center; position: relative; }
 .trip-cover.has-img .trip-emoji { position: absolute; left: 12px; bottom: 10px; font-size: 1.5rem; background: var(--card); border-radius: 12px; width: 40px; height: 40px; display: grid; place-items: center; }
 .trip-cover .trip-emoji { font-size: 3rem; }
+.cover-pick { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; }
+.cover-prev { flex: 0 0 120px; height: 72px; border-radius: 14px; background: var(--card2) center / cover no-repeat; border: 2px dashed var(--line); display: grid; place-items: center; font-size: .8rem; font-weight: 700; color: var(--muted); }
+.cover-prev.has-img { border-style: solid; }
+.cover-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+.cover-btns label.btn { cursor: pointer; }
 .trip-cover.hero { width: 86px; height: 86px; border-radius: 22px; flex: none; }
 .trip-cover.hero .trip-emoji { font-size: 2.4rem; }
 .trip-cover.hero.has-img .trip-emoji { display: none; }

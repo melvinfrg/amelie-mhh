@@ -1,4 +1,6 @@
-import { S, add, patch, del, me, partner, avatar, whoOptions, nameOf, profileOf } from '../state.js';
+import { S, add, patch, del, me, partner, avatar, whoOptions, nameOf, profileOf, photoUrl } from '../state.js';
+import { db } from '../db.js';
+import { resize } from './photos.js';
 import { esc, todayStr, diffDays, addDays, fmtDate, fmtRange, fmtTime, plural, money, uid, safeUrl, cssUrl, hostOf, parseDate } from '../util.js';
 import { openModal, toast, burst, centerOf } from '../ui.js';
 
@@ -32,8 +34,11 @@ export function countdownText(t) {
   return 'Wunschziel ✨';
 }
 
+// Demo-Modus speichert hochgeladene Bilder als data:-URL
+const bgOf = (u) => (u?.startsWith('data:image/') ? `url("${u.replace(/["\\\n\r]/g, '')}")` : cssUrl(u));
 const cover = (t, cls = '') => {
-  const bg = t.cover_url ? cssUrl(t.cover_url) : '';
+  // cover_url ist entweder ein Link oder der Pfad eines hochgeladenen Bildes im Fotos-Speicher
+  const bg = t.cover_url ? bgOf(photoUrl(t.cover_url)) : '';
   return `<div class="trip-cover ${cls} ${bg ? 'has-img' : ''}" ${bg ? `style="background-image:${esc(bg)}"` : ''}><span class="trip-emoji">${esc(t.emoji || '🧳')}</span></div>`;
 };
 const stars = (n, action) => `<span class="stars">${[1, 2, 3, 4, 5].map((i) => action ? `<button class="star ${i <= (n || 0) ? 'on' : ''}" data-action="${action}" data-v="${i}" aria-label="${i} Sterne">★</button>` : `<span class="star ${i <= (n || 0) ? 'on' : ''}">★</span>`).join('')}</span>`;
@@ -260,8 +265,46 @@ function tripForm(t = {}) {
       <label class="custom"><input type="radio" name="emoji" value="__custom" ${t.emoji && !TRIP_EMOJIS.includes(t.emoji) ? 'checked' : ''}><input name="emoji_custom" maxlength="8" placeholder="🇮🇹" value="${t.emoji && !TRIP_EMOJIS.includes(t.emoji) ? esc(t.emoji) : ''}"></label></div></div>
     <div class="row2">
       <label class="field"><span>Budget (€)</span><input type="number" min="0" step="1" name="budget" value="${esc(t.budget ?? '')}"></label>
-      <label class="field"><span>Titelbild (Link)</span><input name="cover_url" value="${esc(t.cover_url || '')}" placeholder="https://…jpg"></label>
+    </div>
+    <div class="field"><span>Titelbild</span>
+      <input type="hidden" name="cover_url" value="${esc(t.cover_url || '')}">
+      <div class="cover-pick">
+        <div class="cover-prev"></div>
+        <div class="cover-btns">
+          <label class="btn ghost sm"><input type="file" accept="image/*" hidden data-cover-file>📷 Bild hochladen</label>
+          <button type="button" class="btn ghost sm" data-cover-clear>Entfernen</button>
+        </div>
+      </div>
+      <input data-cover-link value="${esc(t.cover_url?.startsWith('http') ? t.cover_url : '')}" placeholder="… oder Link zu einem Bild (https://…jpg)">
     </div>`;
+}
+// Titelbild: hochladen (landet verkleinert im Fotos-Speicher) oder Link einfügen
+function bindCover(form) {
+  const hidden = form.querySelector('[name=cover_url]'), prev = form.querySelector('.cover-prev');
+  const link = form.querySelector('[data-cover-link]'), file = form.querySelector('[data-cover-file]');
+  let tries = 0;
+  const show = (msg) => {
+    const u = hidden.value ? photoUrl(hidden.value) : null;
+    const bg = u ? bgOf(u) : '';
+    prev.style.backgroundImage = bg;
+    prev.classList.toggle('has-img', !!bg);
+    prev.textContent = msg || (bg ? '' : hidden.value ? 'Lädt …' : 'Kein Bild');
+    form.querySelector('[data-cover-clear]').hidden = !hidden.value;
+    if (hidden.value && !u && !msg && tries++ < 20) setTimeout(() => form.isConnected && show(), 500);
+  };
+  file.onchange = async () => {
+    const f = file.files[0]; if (!f) return;
+    const submit = form.querySelector('[type=submit]');
+    submit && (submit.disabled = true); show('Lädt hoch …');
+    try {
+      hidden.value = await db.uploadPhoto(await resize(f), me());
+      link.value = '';
+    } catch (err) { console.error(err); toast('Das Bild konnte nicht hochgeladen werden', 'error'); }
+    finally { submit && (submit.disabled = false); file.value = ''; show(); }
+  };
+  link.oninput = () => { hidden.value = link.value.trim() ? safeUrl(link.value.trim()) || '' : ''; show(); };
+  form.querySelector('[data-cover-clear]').onclick = () => { hidden.value = ''; link.value = ''; show(); };
+  show();
 }
 const tripFromForm = (d) => ({
   title: d.title, destination: d.destination || null, country: d.country || null,
@@ -275,11 +318,11 @@ const mapSub = async (id, key, fn) => { const t = S.trips.find((x) => x.id === i
 export const actions = {
   'trip-tab': (el) => { L.tab = el.dataset.v; },
   'trip-dtab': (el) => { D.tab = el.dataset.v; },
-  'trip-new': () => openModal({ title: 'Neue Reise', body: tripForm(), submitLabel: 'Anlegen',
+  'trip-new': () => openModal({ title: 'Neue Reise', body: tripForm(), submitLabel: 'Anlegen', onOpen: bindCover,
     onSubmit: async (d) => { const r = await add('trips', { ...tripFromForm(d), links: [], packing: [], expenses: [], plan: [] }); toast('Gute Reise! ✈️'); location.hash = '#/reisen/' + r.id; } }),
   'trip-edit': (el) => {
     const t = S.trips.find((x) => x.id === el.dataset.id); if (!t) return;
-    openModal({ title: 'Reise bearbeiten', body: tripForm(t), onSubmit: (d) => patch('trips', t.id, tripFromForm(d)),
+    openModal({ title: 'Reise bearbeiten', body: tripForm(t), onOpen: bindCover, onSubmit: (d) => patch('trips', t.id, tripFromForm(d)),
       onDelete: async () => { await del('trips', t.id); location.hash = '#/reisen'; } });
   },
   'trip-notes': (el) => { const t = S.trips.find((x) => x.id === el.dataset.id); if (t && (t.notes || '') !== el.value) patch('trips', t.id, { notes: el.value }).then(() => toast('Notizen gespeichert')); },
