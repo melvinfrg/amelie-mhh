@@ -21,23 +21,28 @@ export function deadlines(days = 60) {
   return active().filter((o) => o.cancel_by && o.cancel_by >= T && diffDays(T, o.cancel_by) <= days).sort((a, b) => a.cancel_by.localeCompare(b.cancel_by));
 }
 
+const CAT_COLOR = { 'Versicherungen': 'sky', 'Strom & Energie': 'lemon', 'Verträge': 'lilac', 'Abos & Streaming': 'rose', 'Wohnen': 'peach', 'Mobilität': 'mint', 'Finanzen': 'mint', 'Gesundheit': 'rose' };
+
 function itemCard(o) {
   const url = safeUrl(o.url);
   const T = todayStr();
   const dl = o.cancel_by && o.cancel_by >= T ? diffDays(T, o.cancel_by) : null;
+  const showPm = o.interval !== 'monthly' && o.interval !== 'once' && o.amount;
   return `<article class="card orga-item ${o.active === false ? 'inactive' : ''}">
     <div class="orga-top">
-      <span class="orga-ic">${catEmoji(o.category)}</span>
-      <div class="grow"><h3>${esc(o.title)}</h3>${o.provider ? `<p class="muted">${esc(o.provider)}</p>` : ''}</div>
-      <div class="orga-amount">${o.amount != null ? `<b>${money(o.amount)}</b><small>${esc(INTERVALS[o.interval]?.[0] || '')}</small>` : ''}</div>
-      <button class="icon-btn sm" data-action="og-edit" data-id="${o.id}" aria-label="Bearbeiten">✎</button>
+      <span class="orga-ic ic-${CAT_COLOR[o.category] || 'plain'}">${catEmoji(o.category)}</span>
+      <div class="grow orga-name"><h3>${esc(o.title)}</h3>${o.provider ? `<p class="muted">${esc(o.provider)}</p>` : ''}</div>
+      <button class="icon-btn sm orga-edit" data-action="og-edit" data-id="${o.id}" aria-label="Bearbeiten" title="Bearbeiten">✎</button>
     </div>
+    ${o.amount != null ? `<div class="orga-price">
+      <b>${money(o.amount)}</b><span>${esc(INTERVALS[o.interval]?.[0] || '')}</span>
+      ${showPm ? `<small>≈ ${money(perMonth(o))} im Monat</small>` : ''}
+    </div>` : ''}
     <div class="orga-meta">
       ${o.person ? `<span class="tag">${cfg(o.category).types?.person === 'who' ? `${avatar(o.person, 'xs')} ${esc(nameOf(o.person))}` : `👤 ${esc(o.person)}`}</span>` : ''}
       ${o.next_date ? `<span class="tag ${o.next_date >= T && diffDays(T, o.next_date) <= 14 ? 'warn' : ''}">📅 ${esc(labelFor(o.category, 'next_date'))}: ${esc(fmtDate(o.next_date))}</span>` : ''}
       ${o.payer ? `<span class="tag">${avatar(o.payer, 'xs')} zahlt ${esc(nameOf(o.payer))}</span>` : ''}
-      ${o.interval !== 'monthly' && o.interval !== 'once' && o.amount ? `<span class="tag">≈ ${money(perMonth(o))}/Monat</span>` : ''}
-      ${o.contract_no ? `<span class="tag" title="Vertrags-/Kundennummer">#️⃣ ${esc(o.contract_no)}</span>` : ''}
+      ${o.contract_no ? `<span class="tag" title="Vertrags-/Kundennummer">Nr. ${esc(o.contract_no)}</span>` : ''}
       ${o.end_date ? `<span class="tag">📆 Laufzeit bis ${esc(fmtDate(o.end_date))}</span>` : ''}
       ${dl != null ? `<span class="tag ${dl <= 30 ? 'bad' : 'warn'}">✂️ Kündigen bis ${esc(fmtDate(o.cancel_by))} (${esc(relDay(o.cancel_by))})</span>` : ''}
       ${o.notice ? `<span class="tag">⏳ ${esc(o.notice)}</span>` : ''}
