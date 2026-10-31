@@ -111,9 +111,16 @@ small { font-size: .82em; }
 .me-text { display: grid; line-height: 1.2; }
 .me-text small { color: var(--muted); }
 .me-btn.compact { padding: 4px; border-radius: 50%; background: transparent; box-shadow: none; }
-.portal-link { display: block; margin-top: 10px; padding: 6px 12px; font-size: .85rem; color: var(--muted, #8a7f78); text-decoration: none; }
-.portal-link:hover { text-decoration: underline; }
-.portal-link.compact { margin: 0 8px 0 auto; padding: 4px 8px; font-size: 1.3rem; }
+/* The way back to the start page sits in the same place as in Amelie's and Melvin's areas (src/components/Shell.tsx). */
+.home-btn { display: flex; align-items: center; gap: 10px; margin-top: -4px; padding: 9px 12px; border-radius: 18px; background: var(--card); box-shadow: var(--shadow); border: 1px solid var(--line); color: var(--ink); text-decoration: none; transition: transform .15s, box-shadow .15s; }
+.home-btn:hover { transform: translateY(-2px) rotate(-1deg); box-shadow: var(--shadow-lift); }
+.home-btn img { border-radius: 10px; flex-shrink: 0; }
+.home-arrow { color: var(--muted); font-weight: 800; transition: transform .15s; }
+.home-btn:hover .home-arrow { transform: translateX(-3px); }
+.home-text { display: grid; line-height: 1.2; }
+.home-text small { color: var(--muted); font-size: .78rem; }
+.home-btn.compact { margin: 0 8px 0 auto; padding: 4px 12px 4px 4px; gap: 6px; border-radius: 99px; font-size: .88rem; }
+.home-btn.compact img { border-radius: 50%; }
 .topbar { display: none; }
 main { padding: 30px 34px 70px; max-width: 1180px; width: 100%; outline: none; }
 .bottomnav { display: none; }

@@ -99,6 +99,42 @@ function isActive(pathname: string, href: string) {
   return pathname.startsWith(href);
 }
 
+/**
+ * The way back to the start page, in the same place in all three areas (the Batzi's copy it in public/batzis):
+ * a card under the area's name in the sidebar, a small pill in the top bar on phones.
+ */
+function HomeButton({ compact = false }: { compact?: boolean }) {
+  if (compact)
+    return (
+      <Link
+        href="/"
+        className="flex shrink-0 items-center gap-1.5 rounded-full bg-white py-1 pl-1 pr-3 text-sm font-semibold text-stone-700 shadow-soft md:hidden dark:bg-stone-800 dark:text-stone-200"
+      >
+        <span className="block h-7 w-7 overflow-hidden rounded-full">
+          <Logo of="gemeinsam" />
+        </span>
+        Startseite
+      </Link>
+    );
+  return (
+    <Link
+      href="/"
+      className="group flex items-center gap-3 rounded-2xl border border-stone-200/80 bg-white/80 px-3 py-2.5 text-sm shadow-soft transition hover:-translate-y-0.5 hover:bg-white dark:border-stone-700 dark:bg-stone-800/80 dark:hover:bg-stone-800"
+    >
+      <span aria-hidden className="text-stone-400 transition group-hover:-translate-x-0.5">
+        ←
+      </span>
+      <span className="block h-8 w-8 shrink-0 overflow-hidden rounded-xl">
+        <Logo of="gemeinsam" />
+      </span>
+      <span className="min-w-0 leading-tight">
+        <span className="block font-semibold text-stone-800 dark:text-stone-100">Startseite</span>
+        <span className="block text-xs text-stone-500 dark:text-stone-400">Alle Bereiche</span>
+      </span>
+    </Link>
+  );
+}
+
 export function Shell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { id, icon, brand, nav } = area(pathname);
@@ -108,38 +144,37 @@ export function Shell({ children }: { children: ReactNode }) {
       <AuthGate>
         {(session) => (
           <div className="flex min-h-screen flex-col md:flex-row">
-            <aside className="border-b border-stone-200/50 bg-white/70 backdrop-blur md:sticky md:top-0 md:h-screen md:w-60 md:shrink-0 md:border-b-0 md:bg-transparent dark:border-stone-800 dark:bg-stone-900/70 md:dark:bg-transparent">
-              <div className="flex items-center gap-3 px-4 py-4 md:px-5 md:py-6">
+            <aside className="border-b border-stone-200/50 bg-white/70 backdrop-blur md:sticky md:top-0 md:flex md:h-screen md:w-60 md:shrink-0 md:flex-col md:border-b-0 md:bg-transparent dark:border-stone-800 dark:bg-stone-900/70 md:dark:bg-transparent">
+              <div className="flex items-center gap-3 px-4 py-3 md:px-5 md:pb-4 md:pt-6">
                 <Link
-                  href="/"
-                  className="block h-10 w-10 shrink-0 overflow-hidden rounded-xl shadow-soft transition hover:-rotate-6"
-                  aria-label="Alle Bereiche"
+                  href={nav[0].href}
+                  className="block h-10 w-10 shrink-0 overflow-hidden rounded-xl shadow-soft transition hover:-rotate-6 md:h-11 md:w-11"
+                  aria-label={id === "portal" ? "Startseite" : "Übersicht"}
                 >
                   <Logo of={icon} />
                 </Link>
-                <div className="min-w-0">
-                  <Link href={nav[0].href} className="block truncate font-display text-lg font-semibold tracking-tight">
-                    {brand}
-                  </Link>
-                  {pathname !== "/" && (
-                    <Link href="/" className="block text-xs text-stone-500 hover:underline">
-                      ← Alle Bereiche
-                    </Link>
-                  )}
-                </div>
+                <Link href={nav[0].href} className="min-w-0 flex-1 truncate font-display text-lg font-semibold tracking-tight md:text-xl">
+                  {brand}
+                </Link>
+                {id !== "portal" && <HomeButton compact />}
               </div>
-              <nav className="flex gap-1 overflow-x-auto px-2 pb-2 md:flex-col md:overflow-visible md:px-3">
+              {id !== "portal" && (
+                <div className="hidden px-3 pb-4 md:block">
+                  <HomeButton />
+                </div>
+              )}
+              <nav className="flex gap-1 overflow-x-auto px-2 pb-2 md:flex-1 md:flex-col md:overflow-visible md:px-3">
                 {nav.map((item) => (
                   <AreaLink
                     key={item.href}
                     href={item.href}
-                    className={`flex shrink-0 items-center gap-2.5 rounded-2xl px-3 py-2 text-sm font-semibold transition ${
+                    className={`flex shrink-0 items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold transition ${
                       isActive(pathname, item.href)
                         ? "bg-white text-brand-800 shadow-soft dark:bg-stone-800 dark:text-brand-200"
                         : "text-stone-600 hover:bg-white/70 dark:text-stone-300 dark:hover:bg-stone-800/60"
                     }`}
                   >
-                    <span aria-hidden className="grid h-5 w-5 place-items-center text-base">
+                    <span aria-hidden className="grid h-6 w-6 place-items-center text-lg">
                       {item.icon}
                     </span>
                     {item.label}
@@ -147,11 +182,13 @@ export function Shell({ children }: { children: ReactNode }) {
                 ))}
               </nav>
               {session && (
-                <div className="hidden px-5 py-4 text-xs text-stone-500 md:block">
-                  <p className="truncate">{session.user.email}</p>
-                  <button className="mt-1 underline" onClick={() => supabase().auth.signOut()}>
-                    Abmelden
-                  </button>
+                <div className="hidden px-3 pb-6 pt-4 md:block">
+                  <div className="rounded-2xl bg-white/80 px-4 py-3 text-xs shadow-soft dark:bg-stone-800/80">
+                    <p className="truncate font-semibold text-stone-700 dark:text-stone-200">{session.user.email}</p>
+                    <button className="mt-1 text-stone-500 underline hover:text-stone-800 dark:hover:text-stone-200" onClick={() => supabase().auth.signOut()}>
+                      Abmelden
+                    </button>
+                  </div>
                 </div>
               )}
             </aside>

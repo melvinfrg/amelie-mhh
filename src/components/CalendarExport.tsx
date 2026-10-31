@@ -5,7 +5,7 @@ import { Button, Card, TextInput } from "@/components/ui";
 import { download, matchesFilter, toIcs } from "@/lib/ical";
 import { KIND_LABEL } from "@/lib/labels";
 import { hasSupabase } from "@/lib/supabase";
-import { SubjectDot } from "@/lib/subjects";
+import { eventSubjects, SubjectDot } from "@/lib/subjects";
 import { useTable } from "@/lib/useTable";
 import type { CalendarFeed, EventKind, FeedFilter } from "@/lib/types";
 
@@ -61,9 +61,8 @@ export function CalendarExport() {
   const matching = events.rows.filter((e) => matchesFilter(e, filter));
 
   function downloadFile() {
-    const subjectOf = (id: string | null) => subjects.rows.find((s) => s.id === id)?.name ?? null;
     const file = toIcs(
-      matching.map((e) => ({ ...e, subject: subjectOf(e.subject_id) })),
+      matching.map((e) => ({ ...e, subject: eventSubjects(e, subjects.rows).map((s) => s.name).join(", ") || null })),
       name || "Studium MHH",
     );
     download(`${(name || "studium").toLowerCase().replace(/[^a-z0-9äöüß]+/g, "-")}.ics`, file, "text/calendar;charset=utf-8");

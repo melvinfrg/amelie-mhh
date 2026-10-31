@@ -24,27 +24,27 @@ export function DateFields<T extends Timing>({ draft, onChange }: { draft: T; on
   return (
     <>
       <Field label={allDay ? "Erster Tag" : "Beginn"}>
-        <TextInput
+        <DateInput
           type={allDay ? "date" : "datetime-local"}
           required
           value={allDay ? dayKey(draft.starts_at) : toLocalInput(draft.starts_at)}
-          onChange={(e) => {
-            if (!e.target.value) return;
-            const starts_at = allDay ? localMidnight(e.target.value) : new Date(e.target.value).toISOString();
+          onCommit={(value) => {
+            if (!value) return;
+            const starts_at = allDay ? localMidnight(value) : new Date(value).toISOString();
             // Moving the start keeps an end that would now lie before it from staying behind.
-            const ends_at = draft.ends_at && draft.ends_at < starts_at ? null : draft.ends_at;
+            const ends_at = draft.ends_at && new Date(draft.ends_at) < new Date(starts_at) ? null : draft.ends_at;
             onChange({ starts_at, ends_at } as Partial<T>);
           }}
         />
       </Field>
       <Field label={allDay ? "Letzter Tag (optional)" : "Ende (optional)"}>
-        <TextInput
+        <DateInput
           type={allDay ? "date" : "datetime-local"}
           min={allDay ? dayKey(draft.starts_at) : toLocalInput(draft.starts_at)}
           value={draft.ends_at ? (allDay ? dayKey(draft.ends_at) : toLocalInput(draft.ends_at)) : ""}
-          onChange={(e) =>
+          onCommit={(value) =>
             onChange({
-              ends_at: e.target.value ? (allDay ? localMidnight(e.target.value) : new Date(e.target.value).toISOString()) : null,
+              ends_at: value ? (allDay ? localMidnight(value) : new Date(value).toISOString()) : null,
             } as Partial<T>)
           }
         />
@@ -54,6 +54,59 @@ export function DateFields<T extends Timing>({ draft, onChange }: { draft: T; on
         Ganztägig (z. B. Urlaub, Geburtstag, Frist)
       </label>
     </>
+  );
+}
+
+/** A complete date ("YYYY-MM-DD", optionally with time) in a sensible year range. */
+function plausible(value: string) {
+  const year = Number(value.slice(0, 4));
+  return /^\d{4}-\d{2}-\d{2}/.test(value) && year >= 1900 && year <= 2200 && !Number.isNaN(new Date(value).getTime());
+}
+
+/**
+ * A date or date-time field you can type into freely. While the year is still being typed the browser already
+ * reports dates like "0002-11-05"; handing those on and writing them back used to break the field
+ * ("ungültiger Wert"). The field keeps its own text and only passes on complete, plausible dates.
+ */
+function DateInput({
+  type,
+  value,
+  onCommit,
+  min,
+  required,
+}: {
+  type: "date" | "datetime-local";
+  value: string;
+  onCommit: (value: string) => void;
+  min?: string;
+  required?: boolean;
+}) {
+  const [text, setText] = useState(value);
+  const [shown, setShown] = useState(value);
+  // A new value from outside (e.g. "Ganztägig" switched, another Termin opened) replaces what is in the field.
+  if (value !== shown) {
+    setShown(value);
+    setText(value);
+  }
+  return (
+    <TextInput
+      type={type}
+      required={required}
+      min={min}
+      value={text}
+      onChange={(e) => {
+        const next = e.target.value;
+        setText(next);
+        if (next === "" ? !required : plausible(next)) {
+          setShown(next);
+          onCommit(next);
+        }
+      }}
+      onBlur={() => {
+        // Leaving a half-typed date brings back the last valid one.
+        if (text !== shown && !(text === "" && !required)) setText(shown);
+      }}
+    />
   );
 }
 

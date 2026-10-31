@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { Button, Card, Empty, ErrorNote, Field, PageHeader, ProgressBar, Select, TextArea, TextInput } from "@/components/ui";
 import { Badge, DateFields, EventCard, isSoon, useCalendarView, ViewTabs } from "@/components/events";
 import { CalendarExport } from "@/components/CalendarExport";
@@ -9,10 +9,10 @@ import { BatziToggle, LinkedNote, ShareEvent } from "@/components/ShareEvent";
 import { MonthCalendar, TONES } from "@/components/MonthCalendar";
 import { isCurrent } from "@/lib/dates";
 import { KIND_LABEL } from "@/lib/labels";
-import { SubjectDot } from "@/lib/subjects";
+import { eventSubjectIds, eventSubjects, SubjectDot } from "@/lib/subjects";
 import { BATZI_CALENDAR, useBatziOverlay } from "@/lib/sharing";
 import { useTable } from "@/lib/useTable";
-import type { EventKind, StudyEvent } from "@/lib/types";
+import type { EventKind, StudyEvent, Subject } from "@/lib/types";
 
 type Draft = Omit<StudyEvent, "id">;
 
@@ -22,12 +22,58 @@ const emptyDraft = (): Draft => ({
   starts_at: new Date(new Date().setHours(9, 0, 0, 0) + 7 * 864e5).toISOString(),
   location: "",
   subject_id: null,
+  subject_ids: [],
   notes: "",
   progress: 0,
   done: false,
   ends_at: null,
   all_day: false,
+  pinned: false,
 });
+
+interface Filter {
+  text: string;
+  kinds: EventKind[];
+  /** Subject ids; "none" stands for Termine without a subject. */
+  subjects: string[];
+  pinned: boolean;
+}
+
+const NO_FILTER: Filter = { text: "", kinds: [], subjects: [], pinned: false };
+
+function matches(ev: StudyEvent, f: Filter, subjects: Subject[]) {
+  if (f.kinds.length && !f.kinds.includes(ev.kind)) return false;
+  if (f.pinned && !ev.pinned) return false;
+  if (f.subjects.length) {
+    const ids = eventSubjectIds(ev);
+    if (!(ids.length ? ids : ["none"]).some((id) => f.subjects.includes(id))) return false;
+  }
+  const q = f.text.trim().toLowerCase();
+  if (q) {
+    const names = eventSubjects(ev, subjects).map((s) => s.name);
+    if (![ev.title, ev.location, ev.notes, ...names].some((t) => t?.toLowerCase().includes(q))) return false;
+  }
+  return true;
+}
+
+const toggle = <T,>(list: T[], item: T) => (list.includes(item) ? list.filter((x) => x !== item) : [...list, item]);
+
+function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm transition ${
+        active
+          ? "border-brand-700 bg-brand-700 text-white"
+          : "border-stone-300 bg-white text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
 
 const VIEW_KEY = "termine-ansicht";
 
@@ -47,6 +93,8 @@ export default function TerminePage() {
   const [showPast, setShowPast] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [view, changeView] = useCalendarView(VIEW_KEY);
+  const [filter, setFilter] = useState<Filter>(NO_FILTER);
+  const [showFilter, setShowFilter] = useState(false);
   const batzis = useBatziOverlay("studium");
 
   function edit(target: { id?: string; draft: Draft }) {
@@ -54,15 +102,20 @@ export default function TerminePage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  const sorted = [...events.rows].sort((a, b) => a.starts_at.localeCompare(b.starts_at));
+  const activeFilters = filter.kinds.length + filter.subjects.length + (filter.pinned ? 1 : 0) + (filter.text.trim() ? 1 : 0);
+  const shown = events.rows.filter((e) => matches(e, filter, subjects.rows));
+  const sorted = [...shown].sort((a, b) => a.starts_at.localeCompare(b.starts_at));
   const upcoming = sorted.filter((e) => isCurrent(e) && !e.done);
   const past = sorted.filter((e) => !isCurrent(e) || e.done).reverse();
 
   async function save(e: FormEvent) {
     e.preventDefault();
     if (!editing) return;
+    const subject_ids = eventSubjectIds(editing.draft);
     const draft = {
       ...editing.draft,
+      subject_ids,
+      subject_id: subject_ids[0] ?? null,
       location: editing.draft.location || null,
       notes: editing.draft.notes || null,
     };
@@ -72,7 +125,7 @@ export default function TerminePage() {
   }
 
   function row(ev: StudyEvent) {
-    const subject = subjects.rows.find((s) => s.id === ev.subject_id);
+    const evSubjects = eventSubjects(ev, subjects.rows);
     const urgent = isSoon(ev.starts_at) && (ev.kind === "pruefung" || ev.kind === "testat");
     return (
       <EventCard
@@ -82,11 +135,12 @@ export default function TerminePage() {
         badge={<Badge className={KIND_TONE[ev.kind].chip}>{KIND_LABEL[ev.kind]}</Badge>}
         meta={
           <>
-            {subject && (
-              <span className="flex items-center gap-1">
+            {ev.pinned && <span title="Auf der Startseite angepinnt">📌</span>}
+            {evSubjects.map((subject) => (
+              <span key={subject.id} className="flex items-center gap-1">
                 <SubjectDot color={subject.color} /> {subject.name}
               </span>
-            )}
+            ))}
             <LinkedNote source="studium" id={ev.id} />
           </>
         }
@@ -103,7 +157,14 @@ export default function TerminePage() {
           aria-label="Vorbereitungsstand"
         />
         <span className="w-10 text-sm tabular-nums">{ev.progress}%</span>
-        <div className="ml-auto flex gap-1">
+        <div className="ml-auto flex flex-wrap gap-1">
+          <Button
+            variant="ghost"
+            title={ev.pinned ? "Von der Startseite nehmen" : "Auf der Startseite anzeigen"}
+            onClick={() => events.update(ev.id, { pinned: !ev.pinned })}
+          >
+            {ev.pinned ? "📌 Lösen" : "📌 Anpinnen"}
+          </Button>
           <Button variant="ghost" onClick={() => events.update(ev.id, { done: !ev.done })}>
             {ev.done ? "Wieder öffnen" : "Erledigt"}
           </Button>
@@ -186,27 +247,37 @@ export default function TerminePage() {
                 })
               }
             />
-            <Field label="Fach">
-              <Select
-                value={editing.draft.subject_id ?? ""}
-                onChange={(e) =>
-                  setEditing({
-                    ...editing,
-                    draft: {
-                      ...editing.draft,
-                      subject_id: e.target.value || null,
-                    },
-                  })
-                }
-              >
-                <option value="">–</option>
-                {subjects.rows.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </Select>
-            </Field>
+            <div className="text-sm sm:col-span-2">
+              <span className="mb-1 block font-medium text-stone-700 dark:text-stone-300">Fächer</span>
+              <div className="flex flex-wrap gap-2">
+                {subjects.rows.map((s) => {
+                  const ids = eventSubjectIds(editing.draft);
+                  return (
+                    <Chip
+                      key={s.id}
+                      active={ids.includes(s.id)}
+                      onClick={() =>
+                        setEditing({
+                          ...editing,
+                          draft: { ...editing.draft, subject_ids: toggle(ids, s.id), subject_id: null },
+                        })
+                      }
+                    >
+                      <SubjectDot color={s.color} /> {s.name}
+                    </Chip>
+                  );
+                })}
+                {subjects.rows.length === 0 && <span className="text-stone-500">Noch keine Fächer angelegt.</span>}
+              </div>
+            </div>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={Boolean(editing.draft.pinned)}
+                onChange={(e) => setEditing({ ...editing, draft: { ...editing.draft, pinned: e.target.checked } })}
+              />
+              📌 Auf der Startseite anpinnen
+            </label>
             <Field label="Ort">
               <TextInput
                 value={editing.draft.location ?? ""}
@@ -239,12 +310,65 @@ export default function TerminePage() {
         </Card>
       )}
 
-      <ViewTabs view={view} onChange={changeView} />
+      <div className="flex flex-wrap items-start gap-2">
+        <ViewTabs view={view} onChange={changeView} />
+        <TextInput
+          type="search"
+          value={filter.text}
+          onChange={(e) => setFilter({ ...filter, text: e.target.value })}
+          placeholder="🔍 Suchen …"
+          aria-label="Termine durchsuchen"
+          className="w-44 flex-none sm:w-56"
+        />
+        <Button variant="secondary" aria-expanded={showFilter} onClick={() => setShowFilter(!showFilter)}>
+          Filter{activeFilters ? ` (${activeFilters})` : ""} {showFilter ? "▴" : "▾"}
+        </Button>
+        {activeFilters > 0 && (
+          <Button variant="ghost" onClick={() => setFilter(NO_FILTER)}>
+            Zurücksetzen
+          </Button>
+        )}
+      </div>
+      {showFilter && (
+        <Card className="mb-4 space-y-3">
+          <div>
+            <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-stone-500">Art</p>
+            <div className="flex flex-wrap gap-2">
+              {(Object.keys(KIND_LABEL) as EventKind[]).map((k) => (
+                <Chip key={k} active={filter.kinds.includes(k)} onClick={() => setFilter({ ...filter, kinds: toggle(filter.kinds, k) })}>
+                  {KIND_LABEL[k]}
+                </Chip>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-stone-500">Fach</p>
+            <div className="flex flex-wrap gap-2">
+              {subjects.rows.map((s) => (
+                <Chip key={s.id} active={filter.subjects.includes(s.id)} onClick={() => setFilter({ ...filter, subjects: toggle(filter.subjects, s.id) })}>
+                  <SubjectDot color={s.color} /> {s.name}
+                </Chip>
+              ))}
+              <Chip active={filter.subjects.includes("none")} onClick={() => setFilter({ ...filter, subjects: toggle(filter.subjects, "none") })}>
+                ohne Fach
+              </Chip>
+            </div>
+          </div>
+          <Chip active={filter.pinned} onClick={() => setFilter({ ...filter, pinned: !filter.pinned })}>
+            📌 Nur angepinnte
+          </Chip>
+        </Card>
+      )}
+      {activeFilters > 0 && (
+        <p className="mb-3 text-sm text-stone-500">
+          {shown.length} von {events.rows.length} Terminen passen zum Filter.
+        </p>
+      )}
       {view === "kalender" && batzis.available && <BatziToggle on={batzis.on} onChange={batzis.toggle} />}
 
       {view === "kalender" ? (
         <MonthCalendar
-          events={[...events.rows, ...batzis.items]}
+          events={[...shown, ...(activeFilters ? [] : batzis.items)]}
           tone={(ev) => ("external" in ev ? TONES.batzi : KIND_TONE[ev.kind])}
           label={(ev) => ("external" in ev ? "Batzi's" : KIND_LABEL[ev.kind])}
           legend={[
@@ -253,10 +377,14 @@ export default function TerminePage() {
           ]}
           details={(ev) => {
             if ("external" in ev) return null;
-            const subject = subjects.rows.find((s) => s.id === ev.subject_id);
-            return subject && (
+            const evSubjects = eventSubjects(ev, subjects.rows);
+            return evSubjects.length > 0 && (
               <>
-                <SubjectDot color={subject.color} /> {subject.name}
+                {evSubjects.map((subject) => (
+                  <span key={subject.id} className="mr-2 inline-flex items-center gap-1">
+                    <SubjectDot color={subject.color} /> {subject.name}
+                  </span>
+                ))}
               </>
             );
           }}
@@ -274,7 +402,9 @@ export default function TerminePage() {
       ) : (
         <>
           <div className="space-y-3">
-            {upcoming.length === 0 && events.loaded && <Empty>Keine anstehenden Termine. Leg den ersten an!</Empty>}
+            {upcoming.length === 0 && events.loaded && (
+              <Empty>{activeFilters ? "Keine anstehenden Termine passen zum Filter." : "Keine anstehenden Termine. Leg den ersten an!"}</Empty>
+            )}
             {upcoming.map(row)}
           </div>
 
