@@ -7,6 +7,8 @@ export function toast(msg, type = 'info') {
   el.className = `toast ${type}`;
   el.textContent = msg;
   box.appendChild(el);
+  // Ein offener Dialog liegt über allem; als Popover rutschen die Meldungen darüber, sonst sieht man Fehler beim Speichern nicht.
+  if (box.showPopover) { try { if (box.matches(':popover-open')) box.hidePopover(); box.showPopover(); } catch {} }
   setTimeout(() => el.classList.add('out'), 2800);
   setTimeout(() => el.remove(), 3300);
 }
