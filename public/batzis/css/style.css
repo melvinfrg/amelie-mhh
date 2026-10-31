@@ -245,6 +245,8 @@ dialog[open] { animation: pop .22s cubic-bezier(.2, .9, .3, 1.25); }
 /* Toast & Konfetti */
 #toasts { position: fixed; z-index: 100; left: 50%; transform: translateX(-50%); bottom: calc(96px + env(safe-area-inset-bottom)); display: grid; gap: 8px; justify-items: center; pointer-events: none; width: max-content; max-width: calc(100vw - 32px); }
 @media (min-width: 861px) { #toasts { bottom: 28px; } }
+#toasts[popover] { top: auto; right: auto; margin: 0; padding: 0; border: 0; background: none; overflow: visible; color: inherit; }
+#toasts:empty { display: none; }
 .toast { background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 99px; font-weight: 700; box-shadow: var(--shadow-lift); animation: toastin .25s ease-out; transition: opacity .4s, transform .4s; }
 .toast.error { background: var(--bad); color: #fff; }
 .toast.out { opacity: 0; transform: translateY(8px); }
