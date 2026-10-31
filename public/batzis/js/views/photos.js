@@ -28,7 +28,7 @@ export function photoCard() {
   </section>`;
 }
 
-async function resize(file, max = 1600) {
+export async function resize(file, max = 1600) {
   const bmp = await (window.createImageBitmap ? createImageBitmap(file).catch(() => null) : null);
   let src = bmp;
   if (!src) {
