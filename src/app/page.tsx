@@ -3,7 +3,8 @@
 import { ExamReminder } from "@/components/ExamReminder";
 import { AREAS, AreaLink, type LogoKind } from "@/components/Shell";
 import { DateTile, Empty, Greeting, Panel } from "@/components/ui";
-import { daysUntil, eventCountdown, eventTime, isCurrent } from "@/lib/dates";
+import { daysUntil, eventCountdown, eventTime, formatEventDate, isCurrent } from "@/lib/dates";
+import { KIND_LABEL } from "@/lib/labels";
 import { BATZI_CALENDAR, batziItems } from "@/lib/sharing";
 import { useTable } from "@/lib/useTable";
 
@@ -41,6 +42,14 @@ function useUpcoming(days = 14) {
     .slice(0, 6);
 }
 
+/** Termine pinned in Amelie's Studium, however far away, until they are over or done. */
+function usePinned() {
+  const studium = useTable("events");
+  return studium.rows
+    .filter((e) => e.pinned && !e.done && isCurrent(e))
+    .sort((a, b) => a.starts_at.localeCompare(b.starts_at));
+}
+
 /** Each calendar's dates take the colour of its area. */
 const TILE: Record<LogoKind, string> = {
   melvin: "bg-indigo-100 text-indigo-900 dark:bg-indigo-950 dark:text-indigo-100",
@@ -50,6 +59,7 @@ const TILE: Record<LogoKind, string> = {
 
 export default function Portal() {
   const upcoming = useUpcoming();
+  const pinned = usePinned();
   return (
     <>
       <Greeting name="ihr zwei 👋" />
@@ -76,6 +86,27 @@ export default function Portal() {
           </AreaLink>
         ))}
       </div>
+
+      {pinned.length > 0 && (
+        <Panel title="📌 Angepinnt" href="/termine" more="Termine" className="mt-8">
+          <ul className="space-y-1">
+            {pinned.map((e) => (
+              <li key={e.id}>
+                <AreaLink href="/termine" className="-mx-2 flex items-center gap-3 rounded-2xl px-2 py-2 transition hover:bg-stone-50 dark:hover:bg-stone-800/50">
+                  <DateTile iso={e.starts_at} className={TILE.amelie} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-semibold">{e.title}</span>
+                    <span className="block text-sm text-stone-500 dark:text-stone-400">
+                      {KIND_LABEL[e.kind]} · {formatEventDate(e)}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-sm font-semibold text-teal-700 dark:text-teal-300">{eventCountdown(e)}</span>
+                </AreaLink>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      )}
 
       <Panel title="Die nächsten zwei Wochen" className="mt-8">
         {upcoming.length === 0 ? (

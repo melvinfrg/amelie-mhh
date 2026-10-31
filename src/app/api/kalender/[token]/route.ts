@@ -14,6 +14,8 @@ interface FeedRow {
   location: string | null;
   notes: string | null;
   subject_id: string | null;
+  /** Missing until migration 0013 has run. */
+  subject_ids?: string[] | null;
   subject_name: string | null;
   done: boolean;
 }

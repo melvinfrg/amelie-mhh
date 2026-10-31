@@ -12,9 +12,14 @@ export interface StudyEvent extends Base {
   kind: EventKind;
   starts_at: string;
   location: string | null;
+  /** First of subject_ids, kept for older readers. */
   subject_id: ID | null;
+  /** All subjects of the event (missing before migration 0013). */
+  subject_ids?: ID[] | null;
   notes: string | null;
   progress: number;
+  /** Shown on the start page however far away it is. */
+  pinned?: boolean;
   done: boolean;
   /** Optional end; for all-day events the last day (inclusive). */
   ends_at?: string | null;

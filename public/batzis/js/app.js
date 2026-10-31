@@ -162,13 +162,13 @@ function renderShell() {
   <div class="shell">
     <aside class="sidebar">
       <a class="brand" href="#/dashboard"><img src="assets/icon.svg?v=2" alt="" width="44" height="44"><span>Die Batzi's</span></a>
+      <a class="home-btn" href="/"><span class="home-arrow" aria-hidden="true">←</span><img src="/logos/gemeinsam.svg" alt="" width="32" height="32"><span class="home-text"><b>Startseite</b><small>Alle Bereiche</small></span></a>
       <nav class="nav" id="nav"></nav>
       <button class="me-btn" id="me-btn"></button>
-      <a class="portal-link" href="/">← Alle Bereiche</a>
     </aside>
     <header class="topbar">
       <a class="brand" href="#/dashboard"><img src="assets/icon.svg?v=2" alt="" width="36" height="36"><span>Die Batzi's</span></a>
-      <a class="portal-link compact" href="/" title="Alle Bereiche">⌂</a>
+      <a class="home-btn compact" href="/"><img src="/logos/gemeinsam.svg" alt="" width="28" height="28"><b>Startseite</b></a>
       <button class="me-btn compact" id="me-btn-m"></button>
     </header>
     <main id="view" tabindex="-1"></main>

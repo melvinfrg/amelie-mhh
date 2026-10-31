@@ -1,4 +1,5 @@
 import { KIND_LABEL } from "./labels";
+import { eventSubjectIds } from "./subjects";
 import type { FeedFilter, StudyEvent } from "./types";
 
 const ZONE = "Europe/Berlin";
@@ -76,9 +77,12 @@ export function toIcs(events: IcsEvent[], name = "Studium MHH") {
   return lines.map(fold).join("\r\n") + "\r\n";
 }
 
-export function matchesFilter(e: Pick<StudyEvent, "kind" | "subject_id" | "done">, filter: FeedFilter) {
+export function matchesFilter(e: Pick<StudyEvent, "kind" | "subject_id" | "subject_ids" | "done">, filter: FeedFilter) {
   if (filter.kinds?.length && !filter.kinds.includes(e.kind)) return false;
-  if (filter.subjects?.length && !filter.subjects.includes(e.subject_id ?? "none")) return false;
+  if (filter.subjects?.length) {
+    const ids = eventSubjectIds(e);
+    if (!(ids.length ? ids : ["none"]).some((id) => filter.subjects!.includes(id))) return false;
+  }
   if (filter.hideDone && e.done) return false;
   return true;
 }
