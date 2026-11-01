@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fredoka, Nunito } from "next/font/google";
+import { PageEnter } from "@/components/PageEnter";
 import { Shell } from "@/components/Shell";
 import "./globals.css";
 
@@ -21,7 +22,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="de" className={`h-full antialiased ${nunito.variable} ${fredoka.variable}`}>
       <body className="min-h-full">
-        <Shell>{children}</Shell>
+        <Shell>
+          <PageEnter>{children}</PageEnter>
+        </Shell>
       </body>
     </html>
   );

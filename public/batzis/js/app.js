@@ -232,6 +232,9 @@ function renderView() {
   root.innerHTML = ROUTES[cur.name].view.render(cur.param);
   document.title = `${ROUTES[cur.name].label} · Die Batzi's`;
   enhanceTabs(root, scrolls);
+  // Ein neuer Bereich blendet kurz ein; ein Neuzeichnen derselben Ansicht (neue Daten) bleibt ruhig.
+  if (!sameView && root.animate && !matchMedia('(prefers-reduced-motion: reduce)').matches)
+    root.animate([{ opacity: 0, translate: '0 6px' }, { opacity: 1, translate: '0 0' }], { duration: 220, easing: 'cubic-bezier(.2, .7, .3, 1)' });
 }
 
 // Reiter-Leisten: Pfeile links/rechts, wenn sie breiter als der Bildschirm sind

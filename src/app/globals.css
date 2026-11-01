@@ -101,3 +101,67 @@ h3 {
     background-image: radial-gradient(circle at 0% -10%, color-mix(in oklch, var(--brand-950) 70%, transparent) 0, transparent 40%);
   }
 }
+
+/*
+ * Motion: short and quiet, so the site feels alive without slowing anything down.
+ * Cards rise in one after another, new list entries fade in, buttons and card links give a little when pressed,
+ * opened <details> unfold. All of it is switched off when the system asks for reduced motion.
+ * In @layer base, so a Tailwind class on an element still wins.
+ */
+@keyframes rise {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    translate: 0 3px;
+  }
+}
+
+@layer base {
+  @media (prefers-reduced-motion: no-preference) {
+    .motion-rise {
+      animation: rise 0.32s cubic-bezier(0.2, 0.7, 0.3, 1) backwards;
+    }
+    /* Cards side by side come in one after another, at most a short moment apart. */
+    .motion-rise:nth-child(2) {
+      animation-delay: 40ms;
+    }
+    .motion-rise:nth-child(3) {
+      animation-delay: 80ms;
+    }
+    .motion-rise:nth-child(4) {
+      animation-delay: 120ms;
+    }
+    .motion-rise:nth-child(n + 5) {
+      animation-delay: 160ms;
+    }
+
+    /* A new entry in a list (a ToDo just added, a Termin just loaded) fades in instead of popping up. */
+    main :is(ul, ol) > li {
+      animation: fade-in 0.22s ease-out backwards;
+    }
+
+    details[open] > :not(summary) {
+      animation: fade-in 0.2s ease-out backwards;
+    }
+
+    /* Press feedback. Plain links in text are inline and stay as they are; only button-like and card links give. */
+    button,
+    a {
+      transition-property: color, background-color, border-color, box-shadow, opacity, translate, scale, rotate;
+      transition-duration: 0.15s;
+      transition-timing-function: ease-out;
+    }
+    button:not(:disabled):active {
+      scale: 0.97;
+    }
+    a:active {
+      scale: 0.985;
+    }
+  }
+}
