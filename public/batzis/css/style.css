@@ -743,3 +743,8 @@ details.help ol { margin: 10px 0 6px; padding-left: 20px; display: grid; gap: 6p
 .share-target { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 99px; background: var(--card2); border: 2px solid var(--line); font-weight: 700; cursor: pointer; }
 .share-target:has(input:checked) { border-color: var(--coral); background: var(--peach-s); }
 .share-target input { accent-color: var(--coral); }
+
+/* Wer am System „Bewegung reduzieren“ eingestellt hat, bekommt keine Animationen. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}

@@ -30,7 +30,7 @@ export function Button({
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
     <section
-      className={`rounded-[1.75rem] bg-white shadow-soft dark:bg-stone-900 dark:ring-1 dark:ring-stone-800 ${/(^|\s)p-/.test(className) ? "" : "p-4"} ${className}`}
+      className={`motion-rise rounded-[1.75rem] bg-white shadow-soft dark:bg-stone-900 dark:ring-1 dark:ring-stone-800 ${/(^|\s)p-/.test(className) ? "" : "p-4"} ${className}`}
     >
       {children}
     </section>
@@ -82,7 +82,7 @@ export function Empty({ children }: { children: ReactNode }) {
 export function ProgressBar({ value, color = "bg-brand-600" }: { value: number; color?: string }) {
   return (
     <div className="h-2 w-full overflow-hidden rounded-full bg-stone-200 dark:bg-stone-800">
-      <div className={`h-full rounded-full ${color}`} style={{ width: `${Math.round(Math.min(1, Math.max(0, value)) * 100)}%` }} />
+      <div className={`h-full rounded-full transition-[width] duration-500 ease-out motion-reduce:transition-none ${color}`} style={{ width: `${Math.round(Math.min(1, Math.max(0, value)) * 100)}%` }} />
     </div>
   );
 }
@@ -90,7 +90,7 @@ export function ProgressBar({ value, color = "bg-brand-600" }: { value: number; 
 export function ErrorNote({ error }: { error: string | null }) {
   if (!error) return null;
   return (
-    <p className="mb-4 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-800 dark:bg-rose-950 dark:text-rose-200">
+    <p className="motion-rise mb-4 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-800 dark:bg-rose-950 dark:text-rose-200">
       Fehler: {error}
     </p>
   );
