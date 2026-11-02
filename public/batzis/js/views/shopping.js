@@ -29,8 +29,36 @@ export function guessCat(name) {
 }
 
 export const STORES = ['ALDI', 'LIDL', 'PENNY', 'NETTO', 'REWE', 'EDEKA', 'Kaufland'];
-export const normStore = (s) => (s ? STORES.find((x) => x.toLowerCase() === String(s).trim().toLowerCase()) || null : null);
-const storeOptions = (sel, autoLabel = '🏪 Laden (auto)') => `<option value="">${autoLabel}</option>${STORES.map((x) => `<option value="${x}" ${normStore(sel) === x ? 'selected' : ''}>${x}</option>`).join('')}`;
+// Eigene Läden (gemeinsam für alle gespeichert)
+export const customStores = () => getSetting('shop_stores', {}).stores || [];
+export const allStores = () => [...STORES, ...customStores().filter((x) => !STORES.some((d) => d.toLowerCase() === x.toLowerCase()))];
+export const normStore = (s) => (s ? allStores().find((x) => x.toLowerCase() === String(s).trim().toLowerCase()) || null : null);
+const NEW_STORE = '__new__';
+const storeOptions = (sel, autoLabel = '🏪 Laden (auto)') => `<option value="">${autoLabel}</option>${allStores().map((x) => `<option value="${esc(x)}" ${normStore(sel) === x ? 'selected' : ''}>${esc(x)}</option>`).join('')}${sel && !normStore(sel) ? `<option value="${esc(sel)}" selected>${esc(sel)}</option>` : ''}<option value="${NEW_STORE}">＋ Neuer Laden …</option>`;
+
+export async function addStore(name) {
+  const n = String(name || '').trim().replace(/\s+/g, ' ').slice(0, 40);
+  if (!n || n === NEW_STORE) return null;
+  const existing = normStore(n);
+  if (existing) return existing;
+  await setSetting('shop_stores', { stores: [...customStores(), n] });
+  toast(`🏪 „${n}“ hinzugefügt`);
+  return n;
+}
+async function removeStore(name) {
+  await setSetting('shop_stores', { stores: customStores().filter((x) => x !== name) });
+}
+// „＋ Neuer Laden …“ im Auswahlfeld: Namen abfragen, speichern und gleich auswählen
+async function pickNewStore(sel) {
+  if (sel.value !== NEW_STORE) return;
+  const name = prompt('Wie heißt der neue Laden?');
+  const st = await addStore(name);
+  // die Liste wurde inzwischen evtl. neu gezeichnet → aktuelles Feld holen
+  if (sel.id && !sel.isConnected) sel = document.getElementById(sel.id) || sel;
+  if (!st) { sel.value = ''; return; }
+  if (![...sel.options].some((o) => o.value === st)) sel.add(new Option(st, st), sel.options.length - 1);
+  sel.value = st;
+}
 const V = { group: store.get('batzi-shop-group', 'cat'), store: 'all' };
 
 // Gemeinsames Gedächtnis: welche Kategorie / welcher Laden für welchen Artikel
@@ -60,7 +88,8 @@ export function render() {
   const hist = mem.length ? mem.sort((a, b) => (b.n || 0) - (a.n || 0) || String(b.last).localeCompare(String(a.last))).map((m) => m.name) : store.get('batzi-shop-history', []);
   const suggestions = hist.filter((h) => !onList.has(h.toLowerCase())).slice(0, 12);
   const used = new Set(allOpen.map((i) => i.store).filter(Boolean));
-  const stores = [...STORES.filter((x) => used.has(x)), ...[...used].filter((x) => !STORES.includes(x))];
+  const all = allStores();
+  const stores = [...all.filter((x) => used.has(x)), ...[...used].filter((x) => !all.includes(x))];
   const noStore = allOpen.some((i) => !i.store);
 
   let grouped;
@@ -84,14 +113,14 @@ export function render() {
   </header>
 
   <form class="quick card shop-quick" data-submit="shop-add" autocomplete="off">
-    <input id="shop-name" name="name" placeholder="Was brauchen wir? (mehrere mit Komma)" list="shop-hist" aria-label="Artikel">
-    <input id="shop-qty" name="quantity" placeholder="Menge" class="qty" aria-label="Menge">
-    <select id="shop-store" name="store" class="store-in" aria-label="Laden">${storeOptions('')}</select>
+    <input id="shop-name" data-keep name="name" placeholder="Was brauchen wir? (mehrere mit Komma)" list="shop-hist" aria-label="Artikel">
+    <input id="shop-qty" data-keep name="quantity" placeholder="Menge" class="qty" aria-label="Menge">
+    <select id="shop-store" data-keep data-change="shop-store-pick" name="store" class="store-in" aria-label="Laden">${storeOptions('')}</select>
     <select name="category" aria-label="Kategorie"><option value="">✨ Automatisch</option>${CATS.map(([c, e]) => `<option value="${esc(c)}">${e} ${esc(c)}</option>`).join('')}</select>
     <button class="btn primary" type="submit">＋</button>
     <datalist id="shop-hist">${hist.slice(0, 200).map((h) => `<option value="${esc(h)}">`).join('')}</datalist>
   </form>
-  <p class="hint">„Laden (auto)“ = der Laden, in dem ihr den Artikel zuletzt gekauft habt.</p>
+  <p class="hint">„Laden (auto)“ = der Laden, in dem ihr den Artikel zuletzt gekauft habt. <button type="button" class="link-btn" data-action="shop-stores">🏪 Läden verwalten</button></p>
 
   ${suggestions.length ? `<div class="suggest"><span class="hint">Schnell nochmal:</span>${suggestions.map((s) => `<button class="chip" data-action="shop-suggest" data-name="${esc(s)}">＋ ${esc(s)}</button>`).join('')}</div>` : ''}
 
@@ -158,13 +187,15 @@ export const actions = {
   'shop-add': async (form) => {
     const n = form.querySelector('[name=name]'), q = form.querySelector('[name=quantity]'), c = form.querySelector('[name=category]'), st = form.querySelector('[name=store]');
     const v = n.value; if (!v.trim()) return n.focus();
-    const qty = q.value, cat = c.value, shop = st ? st.value : '';
+    const qty = q.value, cat = c.value, shop = st && st.value !== NEW_STORE ? st.value : '';
     n.value = ''; q.value = '';
     await addShopping(v, qty, cat, shop);
     document.getElementById('shop-name')?.focus();
   },
   'shop-group': (el) => { V.group = el.dataset.v; store.set('batzi-shop-group', V.group); },
   'shop-store-filter': (el) => { V.store = el.dataset.v; },
+  'shop-store-pick': (el) => pickNewStore(el),
+  'shop-stores': () => openStoresModal(),
   'shop-suggest': (el) => addShopping(el.dataset.name),
   'shop-toggle': (el) => {
     const i = S.shopping_items.find((x) => x.id === el.dataset.id); if (!i) return;
@@ -187,8 +218,45 @@ export const actions = {
         <label class="field"><span>Notiz</span><input name="note" value="${esc(i.note || '')}" placeholder="z. B. die Bio-Variante"></label>
         <div class="btn-row"><a class="btn ghost sm" href="${esc(offerUrl(i.name))}" target="_blank" rel="noopener noreferrer">🏷️ Angebote bei marktguru</a><a class="btn ghost sm" href="${esc(offerUrlAlt(i.name, i.store))}" target="_blank" rel="noopener noreferrer">🔎 Im Web suchen</a></div>
         ${i.created_by ? `<p class="hint">Hinzugefügt von ${avatar(i.created_by, 'xs')} ${esc(nameOf(i.created_by))}</p>` : ''}`,
-      onSubmit: async (d) => { remember(d.name, d.category, d.store); await patch('shopping_items', i.id, { name: d.name, quantity: d.quantity || null, category: d.category, store: d.store || null, note: d.note || null }); },
+      onOpen: (form) => { const sel = form.querySelector('[name=store]'); sel.onchange = () => pickNewStore(sel); },
+      onSubmit: async (d) => { if (d.store === NEW_STORE) d.store = ''; remember(d.name, d.category, d.store); await patch('shopping_items', i.id, { name: d.name, quantity: d.quantity || null, category: d.category, store: d.store || null, note: d.note || null }); },
       onDelete: () => del('shopping_items', i.id),
     });
   },
 };
+
+function openStoresModal() {
+  const list = () => `
+    <ul class="store-list">
+      ${STORES.map((x) => `<li><span>🏪 ${esc(x)}</span><span class="hint">Standard</span></li>`).join('')}
+      ${customStores().map((x) => `<li><span>🏪 ${esc(x)}</span><button type="button" class="icon-btn sm" data-store-del="${esc(x)}" aria-label="${esc(x)} entfernen">✕</button></li>`).join('')}
+    </ul>`;
+  openModal({
+    title: 'Läden verwalten',
+    body: `
+      <p class="hint">Eigene Läden tauchen danach überall in der Laden-Auswahl und als Filter auf – für euch beide.</p>
+      <div data-store-list>${list()}</div>
+      <label class="field"><span>Neuer Laden</span><input name="name" placeholder="z. B. dm, Rossmann, Wochenmarkt" maxlength="40" autofocus></label>`,
+    submitLabel: 'Hinzufügen',
+    onOpen: (form) => {
+      const box = form.querySelector('[data-store-list]');
+      const refresh = () => { box.innerHTML = list(); };
+      box.onclick = async (e) => {
+        const b = e.target.closest('[data-store-del]'); if (!b) return;
+        const name = b.dataset.storeDel;
+        const n = S.shopping_items.filter((i) => i.store === name && !i.checked).length;
+        if (n && !confirm(`${n} Artikel sind noch „${name}“ zugeordnet. Laden trotzdem aus der Auswahl entfernen? (Die Artikel bleiben.)`)) return;
+        await removeStore(name); refresh();
+      };
+      form._refresh = refresh;
+    },
+    onSubmit: async (d, form) => {
+      if (!d.name) return false;
+      await addStore(d.name);
+      form.querySelector('[name=name]').value = '';
+      form._refresh?.();
+      form.querySelector('[name=name]').focus();
+      return false; // offen lassen, damit man mehrere anlegen kann
+    },
+  });
+}
