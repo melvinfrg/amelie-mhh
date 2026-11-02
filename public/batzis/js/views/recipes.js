@@ -50,6 +50,20 @@ export function dailySuggestions(n = prefs().count, extra = 0) {
   return list.sort((a, b) => a.k - b.k).slice(0, n).map((x) => x.r);
 }
 
+// ---------- Suche ----------
+const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ß/g, 'ss');
+const searchText = (r) => norm([r.title, ...(r.ingredients || []).map((i) => i.name), ...(r.tags || []).map((t) => TAGS[t] || t), ...(r.equipment || []).map((e) => EQUIPMENT[e] || e), r.own ? 'unser rezept eigenes' : ''].join(' '));
+export function searchRecipes(q, list = allRecipes()) {
+  const words = norm(q).split(/\s+/).filter(Boolean);
+  if (!words.length) return list;
+  return list.map((r) => {
+    const t = searchText(r); const title = norm(r.title);
+    if (!words.every((w) => t.includes(w))) return null;
+    const score = words.reduce((n, w) => n + (title.startsWith(w) ? 3 : title.includes(w) ? 2 : 0), 0);
+    return { r, score };
+  }).filter(Boolean).sort((a, b) => b.score - a.score || a.r.title.localeCompare(b.r.title, 'de')).map((x) => x.r);
+}
+
 const tagChips = (r) => (r.tags || []).slice(0, 3).map((t) => `<span class="tag">${esc(TAGS[t] || t)}</span>`).join('');
 
 export function recipeCard(r, { showMatch = pantry().length > 0, size = '' } = {}) {
@@ -67,13 +81,19 @@ export function recipeCard(r, { showMatch = pantry().length > 0, size = '' } = {
 }
 
 export function render() {
-  const tab = (k, l) => `<button class="tab ${V.tab === k ? 'on' : ''}" data-action="rc-tab" data-v="${k}">${l}</button>`;
-  const body = { today: renderToday, pantry: renderPantry, all: renderAll }[V.tab]();
+  const tab = (k, l) => `<button class="tab ${(V.q.trim() ? 'all' : V.tab) === k ? 'on' : ''}" data-action="rc-tab" data-v="${k}">${l}</button>`;
+  const searching = V.q.trim().length > 0;
+  const body = searching ? renderAll() : { today: renderToday, pantry: renderPantry, all: renderAll }[V.tab]();
   return `
   <header class="page-head">
     <div><h1>Rezepte</h1><p class="sub">Keine Idee, was es gibt? Hier kommen jeden Tag frische Vorschläge.</p></div>
     <button class="btn primary" data-action="rc-new">＋ Eigenes Rezept</button>
   </header>
+  <div class="rc-search" role="search">
+    <span class="rc-search-ic" aria-hidden="true">🔍</span>
+    <input type="search" id="rc-search" placeholder="Rezept oder Zutat suchen …" value="${esc(V.q)}" data-input="rc-search" aria-label="Rezepte suchen" autocomplete="off" enterkeyhint="search">
+    ${V.q ? '<button type="button" class="rc-search-x" data-action="rc-search-clear" aria-label="Suche leeren">✕</button>' : ''}
+  </div>
   <nav class="tabs">${tab('today', '✨ Heute')}${tab('pantry', '🧺 Was haben wir da?')}${tab('all', `📖 Alle Rezepte <span class="count">${allRecipes().length}</span>`)}</nav>
   ${body}`;
 }
@@ -115,18 +135,18 @@ function renderPantry() {
 }
 
 function renderAll() {
-  const q = V.q.toLowerCase();
+  const q = V.q.trim();
   const favs = prefs().favorites;
-  const list = allRecipes().filter((r) => (V.eq === 'all' || (r.equipment || []).includes(V.eq)) && (V.tag === 'all' || (V.tag === 'fav' ? favs.includes(r.id) : V.tag === 'own' ? r.own : (r.tags || []).includes(V.tag)))
-    && (!q || `${r.title} ${(r.ingredients || []).map((i) => i.name).join(' ')}`.toLowerCase().includes(q)));
+  const list = searchRecipes(q, allRecipes().filter((r) => (V.eq === 'all' || (r.equipment || []).includes(V.eq)) && (V.tag === 'all' || (V.tag === 'fav' ? favs.includes(r.id) : V.tag === 'own' ? r.own : (r.tags || []).includes(V.tag)))));
+  const filtered = V.eq !== 'all' || V.tag !== 'all';
   const chip = (v, l) => `<button class="chip ${V.tag === v ? 'on' : ''}" data-action="rc-tag" data-v="${esc(v)}">${l}</button>`;
   return `
   <div class="toolbar">
     <div class="chips">${Object.entries(EQUIPMENT).map(([k, l]) => `<button class="chip ${V.eq === k ? 'on' : ''}" data-action="rc-eq" data-v="${k}">${l}</button>`).join('')}</div>
     <div class="chips">${chip('all', 'Alle')}${chip('fav', '⭐ Favoriten')}${chip('own', '📒 Unsere')}${Object.entries(TAGS).map(([k, l]) => chip(k, l)).join('')}</div>
-    <div class="toolbar-right"><input type="search" id="rc-search" placeholder="Rezept oder Zutat suchen …" value="${esc(V.q)}" data-input="rc-search"></div>
   </div>
-  <div class="recipe-grid">${list.map((r) => recipeCard(r)).join('') || '<div class="empty card"><div class="empty-emoji">🍳</div><p>Nichts gefunden.</p></div>'}</div>`;
+  ${q ? `<p class="rc-hits muted">${list.length === 1 ? '1 Rezept' : `${list.length} Rezepte`} für „${esc(q)}“${filtered ? ' (mit Filter)' : ''}</p>` : ''}
+  <div class="recipe-grid">${list.map((r) => recipeCard(r)).join('') || `<div class="empty card"><div class="empty-emoji">🍳</div><p>Nichts gefunden.</p>${filtered ? '<button class="btn sm" data-action="rc-filter-reset">Filter zurücksetzen</button>' : ''}</div>`}</div>`;
 }
 
 // ---------- Detail ----------
@@ -226,9 +246,11 @@ function editRecipe(id) {
 const updPantry = (fn) => setSetting('pantry', { items: fn(pantry()) });
 
 export const actions = {
-  'rc-tab': (el) => { V.tab = el.dataset.v; },
+  'rc-tab': (el) => { V.tab = el.dataset.v; if (V.tab !== 'all') V.q = ''; },
   'rc-tag': (el) => { V.tag = el.dataset.v; },
   'rc-search': (el) => { V.q = el.value; },
+  'rc-search-clear': () => { V.q = ''; requestAnimationFrame(() => document.getElementById('rc-search')?.focus()); },
+  'rc-filter-reset': () => { V.tag = 'all'; V.eq = 'all'; },
   'rc-shuffle': () => { V.shuffle++; },
   'rc-open': (el) => openRecipe(el.dataset.id),
   'rc-unplan': () => setSetting('meal_today', {}),
