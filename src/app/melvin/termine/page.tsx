@@ -8,6 +8,7 @@ import { Button, Card, Empty, ErrorNote, Field, PageHeader, Select, TextArea, Te
 import { isCurrent } from "@/lib/dates";
 import { MELVIN_CATEGORY_LABEL } from "@/lib/labels";
 import { CATEGORY_TONE } from "@/lib/melvin";
+import { useShareAudience } from "@/lib/partner";
 import { BATZI_CALENDAR, useBatziOverlay } from "@/lib/sharing";
 import { useTable } from "@/lib/useTable";
 import type { MelvinCategory, MelvinEvent } from "@/lib/types";
@@ -25,6 +26,7 @@ const emptyDraft = (): Draft => ({
   location: "",
   notes: "",
   done: false,
+  shared: true,
 });
 
 export default function MelvinTermine() {
@@ -33,6 +35,7 @@ export default function MelvinTermine() {
   const [showPast, setShowPast] = useState(false);
   const [view, changeView] = useCalendarView("melvin-termine-ansicht");
   const batzis = useBatziOverlay("melvin");
+  const audience = useShareAudience();
 
   function edit(target: { id?: string; draft: Draft }) {
     setEditing(target);
@@ -61,8 +64,21 @@ export default function MelvinTermine() {
         event={ev}
         urgent={isSoon(ev.starts_at, 1) && !ev.done}
         badge={<Badge className={CATEGORY_TONE[ev.category].chip}>{MELVIN_CATEGORY_LABEL[ev.category]}</Badge>}
-        meta={<LinkedNote source="melvin" id={ev.id} />}
+        meta={
+          <>
+            <LinkedNote source="melvin" id={ev.id} />
+            {ev.shared !== false && (
+              <span className="rounded-full bg-indigo-50 px-2 py-0.5 font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-200" title="Änderungen kommen sofort an">
+                👀 {audience} sieht ihn
+              </span>
+            )}
+          </>
+        }
       >
+        <label className="flex items-center gap-2 text-sm text-stone-600 dark:text-stone-300" title="Live in ihrem Kalender, mit jeder Änderung">
+          <input type="checkbox" checked={ev.shared !== false} onChange={(e) => events.update(ev.id, { shared: e.target.checked })} />
+          Bei {audience} zeigen
+        </label>
         <div className="ml-auto flex gap-1">
           <Button variant="ghost" onClick={() => events.update(ev.id, { done: !ev.done })}>
             {ev.done ? "Wieder öffnen" : "Erledigt"}
@@ -110,6 +126,10 @@ export default function MelvinTermine() {
             <Field label="Notizen" className="sm:col-span-2">
               <TextArea value={editing.draft.notes ?? ""} onChange={(e) => set({ notes: e.target.value })} />
             </Field>
+            <label className="flex items-center gap-2 text-sm sm:col-span-2">
+              <input type="checkbox" checked={editing.draft.shared !== false} onChange={(e) => set({ shared: e.target.checked })} />
+              👀 Bei {audience} zeigen: Sie sieht den Termin in ihrem Kalender, jede Änderung kommt sofort bei ihr an
+            </label>
             <div className="flex gap-2 sm:col-span-2">
               <Button type="submit">Speichern</Button>
               <Button type="button" variant="ghost" onClick={() => setEditing(null)}>

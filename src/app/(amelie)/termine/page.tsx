@@ -5,11 +5,12 @@ import { Button, Card, Empty, ErrorNote, Field, PageHeader, ProgressBar, Select,
 import { Badge, DateFields, EventCard, isSoon, useCalendarView, ViewTabs } from "@/components/events";
 import { CalendarExport } from "@/components/CalendarExport";
 import { MhhSuggestions } from "@/components/MhhSuggestions";
-import { BatziToggle, LinkedNote, ShareEvent } from "@/components/ShareEvent";
+import { BatziToggle, LinkedNote, PartnerToggle, ShareEvent } from "@/components/ShareEvent";
 import { MonthCalendar, TONES } from "@/components/MonthCalendar";
 import { isCurrent } from "@/lib/dates";
-import { KIND_LABEL } from "@/lib/labels";
+import { KIND_LABEL, MELVIN_CATEGORY_LABEL } from "@/lib/labels";
 import { eventSubjectIds, eventSubjects, SubjectDot } from "@/lib/subjects";
+import { usePartnerEvents, type PartnerItem } from "@/lib/partner";
 import { BATZI_CALENDAR, useBatziOverlay } from "@/lib/sharing";
 import { useTable } from "@/lib/useTable";
 import type { EventKind, StudyEvent, Subject } from "@/lib/types";
@@ -56,6 +57,25 @@ function matches(ev: StudyEvent, f: Filter, subjects: Subject[]) {
   return true;
 }
 
+/** Dates shared from someone else's calendar only take part in the text search. */
+function partnerMatches(ev: PartnerItem, f: Filter) {
+  if (f.kinds.length || f.subjects.length || f.pinned) return false;
+  const q = f.text.trim().toLowerCase();
+  return !q || [ev.title, ev.location, ev.notes, ev.owner].some((t) => t?.toLowerCase().includes(q));
+}
+
+/** A shared date from Melvin's calendar: shown, but changed only by him. */
+function PartnerCard({ ev }: { ev: PartnerItem }) {
+  return (
+    <EventCard
+      event={ev}
+      urgent={isSoon(ev.starts_at, 1)}
+      badge={<Badge className={TONES.indigo.chip}>{ev.emoji} {ev.owner}</Badge>}
+      meta={<span>{MELVIN_CATEGORY_LABEL[ev.category]} · live aus seinem Kalender</span>}
+    />
+  );
+}
+
 const toggle = <T,>(list: T[], item: T) => (list.includes(item) ? list.filter((x) => x !== item) : [...list, item]);
 
 function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
@@ -96,6 +116,7 @@ export default function TerminePage() {
   const [filter, setFilter] = useState<Filter>(NO_FILTER);
   const [showFilter, setShowFilter] = useState(false);
   const batzis = useBatziOverlay("studium");
+  const partner = usePartnerEvents("studium");
 
   function edit(target: { id?: string; draft: Draft }) {
     setEditing(target);
@@ -107,6 +128,8 @@ export default function TerminePage() {
   const sorted = [...shown].sort((a, b) => a.starts_at.localeCompare(b.starts_at));
   const upcoming = sorted.filter((e) => isCurrent(e) && !e.done);
   const past = sorted.filter((e) => !isCurrent(e) || e.done).reverse();
+  const partnerShown = partner.items.filter((e) => partnerMatches(e, filter));
+  const partnerUpcoming = partnerShown.filter((e) => isCurrent(e) && !e.done);
 
   async function save(e: FormEvent) {
     e.preventDefault();
@@ -179,6 +202,12 @@ export default function TerminePage() {
       </EventCard>
     );
   }
+
+  // Own dates and the ones shared live from Melvin's calendar, in one row by time.
+  const list = [
+    ...upcoming.map((ev) => ({ at: ev.starts_at, node: row(ev) })),
+    ...partnerUpcoming.map((ev) => ({ at: ev.starts_at, node: <PartnerCard key={`p${ev.id}`} ev={ev} /> })),
+  ].sort((a, b) => a.at.localeCompare(b.at));
 
   return (
     <>
@@ -365,17 +394,20 @@ export default function TerminePage() {
         </p>
       )}
       {view === "kalender" && batzis.available && <BatziToggle on={batzis.on} onChange={batzis.toggle} />}
+      {partner.available && <PartnerToggle names={partner.names} on={partner.on} onChange={partner.toggle} />}
 
       {view === "kalender" ? (
         <MonthCalendar
-          events={[...shown, ...(activeFilters ? [] : batzis.items)]}
-          tone={(ev) => ("external" in ev ? TONES.batzi : KIND_TONE[ev.kind])}
-          label={(ev) => ("external" in ev ? "Batzi's" : KIND_LABEL[ev.kind])}
+          events={[...shown, ...(activeFilters ? [] : batzis.items), ...partnerShown]}
+          tone={(ev) => ("partner" in ev ? TONES.indigo : "external" in ev ? TONES.batzi : KIND_TONE[ev.kind])}
+          label={(ev) => ("partner" in ev ? ev.owner : "external" in ev ? "Batzi's" : KIND_LABEL[ev.kind])}
           legend={[
             ...(Object.keys(KIND_LABEL) as EventKind[]).map((k) => ({ label: KIND_LABEL[k], tone: KIND_TONE[k] })),
             ...(batzis.items.length ? [{ label: "Batzi's", tone: TONES.batzi }] : []),
+            ...(partnerShown.length ? [{ label: partner.names, tone: TONES.indigo }] : []),
           ]}
           details={(ev) => {
+            if ("partner" in ev) return <>{ev.emoji} live aus {ev.owner}s Kalender</>;
             if ("external" in ev) return null;
             const evSubjects = eventSubjects(ev, subjects.rows);
             return evSubjects.length > 0 && (
@@ -388,7 +420,12 @@ export default function TerminePage() {
               </>
             );
           }}
-          onEdit={(ev) => ("external" in ev ? (window.location.href = BATZI_CALENDAR) : edit({ id: ev.id, draft: { ...ev } }))}
+          onEdit={(ev) => {
+            // Shared dates are changed by their owner only.
+            if ("partner" in ev) return;
+            if ("external" in ev) window.location.href = BATZI_CALENDAR;
+            else edit({ id: ev.id, draft: { ...ev } });
+          }}
           onNew={(day) => {
             const [y, m, d] = day.split("-").map(Number);
             edit({
@@ -402,10 +439,10 @@ export default function TerminePage() {
       ) : (
         <>
           <div className="space-y-3">
-            {upcoming.length === 0 && events.loaded && (
+            {list.length === 0 && events.loaded && (
               <Empty>{activeFilters ? "Keine anstehenden Termine passen zum Filter." : "Keine anstehenden Termine. Leg den ersten an!"}</Empty>
             )}
-            {upcoming.map(row)}
+            {list.map((x) => x.node)}
           </div>
 
           {past.length > 0 && (

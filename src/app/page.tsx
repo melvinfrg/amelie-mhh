@@ -5,6 +5,7 @@ import { AREAS, AreaLink, type LogoKind } from "@/components/Shell";
 import { DateTile, Empty, Greeting, Panel } from "@/components/ui";
 import { daysUntil, eventCountdown, eventTime, formatEventDate, isCurrent } from "@/lib/dates";
 import { KIND_LABEL } from "@/lib/labels";
+import { usePartnerEvents } from "@/lib/partner";
 import { BATZI_CALENDAR, batziItems } from "@/lib/sharing";
 import { useTable } from "@/lib/useTable";
 
@@ -24,7 +25,10 @@ function useUpcoming(days = 14) {
   const studium = useTable("events");
   const melvin = useTable("melvin_events");
   const batzis = useTable("batzi_events");
+  const partner = usePartnerEvents("studium");
   const all: Upcoming[] = [
+    // Dates Melvin shares live, for Amelie (her own melvin_events are empty).
+    ...partner.items.filter((e) => !e.done).map((e) => ({ ...e, key: `p${e.id}`, logo: "melvin" as const, where: e.owner, href: "/termine" })),
     ...melvin.rows.filter((e) => !e.done).map((e) => ({ ...e, key: `m${e.id}`, logo: "melvin" as const, where: "Melvin", href: "/melvin/termine" })),
     ...studium.rows.filter((e) => !e.done).map((e) => ({ ...e, key: `s${e.id}`, logo: "amelie" as const, where: "Studium", href: "/termine" })),
     ...batziItems(batzis.rows).map((e) => ({ ...e, key: `b${e.id}`, logo: "gemeinsam" as const, where: "Batzi's", href: BATZI_CALENDAR })),

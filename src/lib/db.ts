@@ -14,7 +14,13 @@ interface Store {
 
 const supabaseStore: Store = {
   async list(table) {
-    const { data, error } = await supabase().from(table).select("*").order("created_at");
+    let query = supabase().from(table).select("*");
+    // Others can read the dates Melvin shares (0014); one's own calendar only holds one's own.
+    if (table === "melvin_events") {
+      const { data: session } = await supabase().auth.getSession();
+      if (session.session) query = query.eq("user_id", session.session.user.id);
+    }
+    const { data, error } = await query.order("created_at");
     if (error) throw error;
     return data ?? [];
   },

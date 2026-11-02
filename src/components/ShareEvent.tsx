@@ -130,3 +130,13 @@ export function BatziToggle({ on, onChange }: { on: boolean; onChange: (on: bool
     </label>
   );
 }
+
+/** Switch for showing the dates others share live from their calendar (Melvin's for Amelie). */
+export function PartnerToggle({ names, on, onChange }: { names: string; on: boolean; onChange: (on: boolean) => void }) {
+  return (
+    <label className="mb-4 ml-3 inline-flex items-center gap-2 text-sm font-semibold text-stone-600 dark:text-stone-300">
+      <input type="checkbox" checked={on} onChange={(e) => onChange(e.target.checked)} />
+      💙 Termine von {names} zeigen
+    </label>
+  );
+}

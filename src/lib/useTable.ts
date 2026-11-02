@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { db, newId } from "./db";
+import { hasSupabase, supabase } from "./supabase";
 import type { TableName, Tables } from "./types";
 
 type Row<T extends TableName> = Tables[T];
@@ -46,6 +47,24 @@ export function load(table: TableName, force = false) {
   return loading;
 }
 
+/** Calendars that change from elsewhere (the other person, linked copies) and reload as soon as they do. */
+const LIVE: TableName[] = ["events", "melvin_events", "batzi_events", "event_links"];
+const live = new Set<TableName>();
+
+function goLive(table: TableName) {
+  if (!hasSupabase || live.has(table) || !LIVE.includes(table)) return;
+  live.add(table);
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  supabase()
+    .channel(`live:${table}`)
+    .on("postgres_changes", { event: "*", schema: "public", table }, () => {
+      // Several rows often change at once (a linked date and its copies); one reload is enough.
+      clearTimeout(timer);
+      timer = setTimeout(() => load(table, true), 400);
+    })
+    .subscribe();
+}
+
 /** Inserts many rows in a few requests and adds them to the shared cache. */
 export async function insertRows<T extends TableName>(table: T, rows: (Omit<Row<T>, "id"> & { id?: string })[]) {
   if (rows.length === 0) return [];
@@ -86,6 +105,8 @@ export function useTable<T extends TableName>(table: T) {
   useEffect(() => {
     load(table);
   }, [table, state.rows]);
+
+  useEffect(() => goLive(table), [table]);
 
   const rows = (state.rows ?? []) as Row<T>[];
 
