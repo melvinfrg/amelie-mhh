@@ -182,6 +182,9 @@ export interface MelvinEvent extends Base {
   location: string | null;
   notes: string | null;
   done: boolean;
+  /** Visible (read-only, live) for the other members of the Batzi's, e.g. Amelie. */
+  shared: boolean;
+  user_id?: string;
 }
 
 export interface MelvinTodo extends Base {
