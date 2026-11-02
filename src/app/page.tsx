@@ -2,6 +2,7 @@
 
 import { ExamReminder } from "@/components/ExamReminder";
 import { AREAS, AreaLink, type LogoKind } from "@/components/Shell";
+import { StartPagePicker } from "@/components/StartPagePicker";
 import { DateTile, Empty, Greeting, Panel } from "@/components/ui";
 import { daysUntil, eventCountdown, eventTime, formatEventDate, isCurrent } from "@/lib/dates";
 import { KIND_LABEL } from "@/lib/labels";
@@ -130,6 +131,8 @@ export default function Portal() {
           </ul>
         )}
       </Panel>
+
+      <StartPagePicker className="mt-8" />
     </>
   );
 }
