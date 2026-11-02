@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState, type ReactNode } from "react";
+import type { Session } from "@supabase/supabase-js";
+import { startRedirect } from "@/lib/startPage";
 import { hasSupabase, supabase } from "@/lib/supabase";
 import { AuthGate } from "./AuthGate";
 
@@ -135,6 +137,20 @@ function HomeButton({ compact = false }: { compact?: boolean }) {
   );
 }
 
+/** Opens the page the person picked as their start page; until the jump is done it shows "Lädt …" instead of a flash of the portal. */
+function StartPage({ session, pathname, children }: { session: Session | null; pathname: string; children: ReactNode }) {
+  const router = useRouter();
+  const [target] = useState(() => startRedirect(session, pathname));
+  const [opened] = useState(pathname);
+  useEffect(() => {
+    if (!target) return;
+    if (target.startsWith("/batzis")) window.location.replace(target);
+    else router.replace(target);
+  }, [target, router]);
+  if (target && pathname === opened) return <div className="p-8 text-sm text-stone-500">Lädt …</div>;
+  return <>{children}</>;
+}
+
 export function Shell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { id, icon, brand, nav } = area(pathname);
@@ -143,6 +159,7 @@ export function Shell({ children }: { children: ReactNode }) {
     <div data-area={id} className="min-h-screen">
       <AuthGate>
         {(session) => (
+          <StartPage session={session} pathname={pathname}>
           <div className="flex min-h-screen flex-col md:flex-row">
             <aside className="border-b border-stone-200/50 bg-white/70 backdrop-blur md:sticky md:top-0 md:flex md:h-screen md:w-60 md:shrink-0 md:flex-col md:border-b-0 md:bg-transparent dark:border-stone-800 dark:bg-stone-900/70 md:dark:bg-transparent">
               <div className="flex items-center gap-3 px-4 py-3 md:px-5 md:pb-4 md:pt-6">
@@ -201,6 +218,7 @@ export function Shell({ children }: { children: ReactNode }) {
               <div className="mx-auto max-w-5xl">{children}</div>
             </main>
           </div>
+          </StartPage>
         )}
       </AuthGate>
     </div>

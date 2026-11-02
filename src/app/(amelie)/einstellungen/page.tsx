@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { StartPagePicker } from "@/components/StartPagePicker";
 import { Button, Card, Field, PageHeader, TextInput } from "@/components/ui";
 import { db } from "@/lib/db";
 import { download } from "@/lib/ical";
@@ -131,6 +132,8 @@ export default function EinstellungenPage() {
   return (
     <>
       <PageHeader title="Einstellungen" />
+
+      <StartPagePicker className="mb-4" />
 
       <Card className="mb-4 space-y-4">
         <h2 className="font-medium">Lernen</h2>
