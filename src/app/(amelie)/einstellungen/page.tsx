@@ -5,7 +5,7 @@ import { StartPagePicker } from "@/components/StartPagePicker";
 import { Button, Card, Field, PageHeader, TextInput } from "@/components/ui";
 import { db } from "@/lib/db";
 import { download } from "@/lib/ical";
-import { createPushSetup, disablePush, enablePush, pushState, type PushState } from "@/lib/push";
+import { createPushSetup, disablePush, enablePush, pushState, setUpdateNotify, updateNotifyState, type PushState } from "@/lib/push";
 import { hasSupabase } from "@/lib/supabase";
 import { useSettings } from "@/lib/settings";
 import { TABLES, type TableName } from "@/lib/types";
@@ -60,9 +60,24 @@ function PushCard() {
   const [state, setState] = useState<PushState | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [updates, setUpdates] = useState<boolean | null>(null);
   useEffect(() => {
     pushState().then(setState, () => setState("unsupported"));
   }, []);
+  useEffect(() => {
+    if (state === "on") updateNotifyState().then(setUpdates, () => setUpdates(null));
+  }, [state]);
+
+  async function toggleUpdates(on: boolean) {
+    setUpdates(on);
+    setError(null);
+    try {
+      await setUpdateNotify(on);
+    } catch (e) {
+      setUpdates(!on);
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  }
 
   async function toggle() {
     setBusy(true);
@@ -81,8 +96,8 @@ function PushCard() {
     <Card className="mb-4 space-y-3">
       <h2 className="font-medium">Benachrichtigungen</h2>
       <p className="text-sm text-stone-500">
-        3 Monate vor jeder Prüfung kommt eine Push-Erinnerung aufs Handy, und auf der Startseite erscheint ein Hinweis. Einschalten auf jedem Gerät, das
-        erinnert werden soll.
+        3 Monate vor jeder Prüfung kommt eine Push-Erinnerung aufs Handy, und auf der Startseite erscheint ein Hinweis. Außerdem kommt eine Nachricht,
+        wenn es eine neue Version der Seite gibt. Einschalten auf jedem Gerät, das erinnert werden soll.
       </p>
       {state && <p className="text-sm">{PUSH_TEXT[state]}</p>}
       {state === "unconfigured" && hasSupabase && <PushSetup />}
@@ -90,6 +105,11 @@ function PushCard() {
         <Button variant={state === "on" ? "secondary" : "primary"} onClick={toggle} disabled={busy}>
           {state === "on" ? "Ausschalten" : "🔔 Einschalten"}
         </Button>
+      )}
+      {state === "on" && updates !== null && (
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={updates} onChange={(e) => toggleUpdates(e.target.checked)} /> 🆕 Neue Versionen melden (auf diesem Gerät)
+        </label>
       )}
       {error && <p className="text-sm text-rose-600">{error}</p>}
     </Card>

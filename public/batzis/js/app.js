@@ -1,4 +1,5 @@
 import { db, isDemo } from './db.js';
+import { CONFIG } from './config.js';
 import { S, loadAll, loadTable, setRerender, myProfile, partner, upsert, avatar, COLORS, TABLES } from './state.js';
 import { esc, todayStr } from './util.js';
 import { openModal, toast } from './ui.js';
@@ -143,7 +144,7 @@ function profileDialog(first = false) {
         <label class="field"><span>Name</span><input name="display_name" required autofocus maxlength="30" value="${esc(p.display_name || '')}" placeholder="z. B. Melvin"></label>
         <div class="field"><span>Dein Tier</span><div class="emoji-pick">${AV_EMOJIS.map((e, i) => `<label><input type="radio" name="emoji" value="${e}" ${(p.emoji || (partner()?.emoji === '🐻' ? '🐰' : '🐻')) === e ? 'checked' : ''}><span>${e}</span></label>`).join('')}</div></div>
         <div class="field"><span>Deine Farbe</span><div class="swatches">${Object.entries(COLORS).map(([k, v]) => `<label class="swatch c-${k}" title="${v}"><input type="radio" name="color" value="${k}" ${(p.color || (partner()?.color === 'peach' ? 'lilac' : 'peach')) === k ? 'checked' : ''}><span></span></label>`).join('')}</div></div>
-        ${!first ? `<p class="hint">Angemeldet als ${esc(S.user.email || '')}${isDemo ? ' (Demo)' : ''}</p>` : ''}`,
+        ${!first ? `<p class="hint">Angemeldet als ${esc(S.user.email || '')}${isDemo ? ' (Demo)' : ''}</p><p class="hint"><a href="/#neuerungen">Version ${esc(CONFIG.VERSION || '?')}</a> · <a href="/#fehler">🐞 Fehler melden</a> · <a href="/anleitung">📖 Anleitung</a></p>` : ''}`,
       submitLabel: first ? 'Los geht’s' : 'Speichern',
       extra: first ? null : { label: isDemo ? '🔄 Person wechseln' : '🚪 Abmelden', onClick: async () => { await db.signOut(); location.hash = '#/dashboard'; location.reload(); } },
       onSubmit: async (d) => {
@@ -165,6 +166,7 @@ function renderShell() {
       <a class="home-btn" href="/"><span class="home-arrow" aria-hidden="true">←</span><img src="/logos/gemeinsam.svg" alt="" width="32" height="32"><span class="home-text"><b>Startseite</b><small>Alle Bereiche</small></span></a>
       <nav class="nav" id="nav"></nav>
       <button class="me-btn" id="me-btn"></button>
+      <p class="side-foot"><a href="/#neuerungen" title="Update-Log: Neuerungen und Änderungen">Version ${esc(CONFIG.VERSION || '?')}</a> · <a href="/#fehler">🐞 Fehler melden</a> · <a href="/anleitung">📖 Anleitung</a></p>
     </aside>
     <header class="topbar">
       <a class="brand" href="#/dashboard"><img src="assets/icon.svg?v=2" alt="" width="36" height="36"><span>Die Batzi's</span></a>

@@ -1,0 +1,122 @@
+[
+  {
+    "v": "2.7.0",
+    "d": "2026-11-03",
+    "items": [
+      { "t": "neu", "x": "📋 Versionen & Update-Log: Unten auf jeder Seite steht die Versionsnummer. Antippen zeigt alle Neuerungen, Verbesserungen und behobenen Fehler, zum Auf- und Zuklappen und mit Filter." },
+      { "t": "neu", "x": "🆕 Roter Punkt an der Version und „Neu in Version …“ auf der Startseite, solange du die Neuerungen noch nicht angesehen hast." },
+      { "t": "neu", "x": "✏️ Update-Log bearbeiten: Versionen antippen und Nummer, Datum und Einträge ändern, eigene Versionen hinzufügen oder löschen. Gilt sofort für beide." },
+      { "t": "neu", "x": "🐞 Fehler melden: Bereich und Art wählen, kurz beschreiben, absenden. Gemeldete Fehler stehen gesammelt im Update-Log und lassen sich abhaken." },
+      { "t": "neu", "x": "🔔 Push-Benachrichtigung bei einer neuen Version, pro Gerät unter Einstellungen → Benachrichtigungen abschaltbar." },
+      { "t": "neu", "x": "📖 Anleitung: alle Funktionen der drei Bereiche Schritt für Schritt erklärt, mit Suche und einem Teil zur Einrichtung." }
+    ]
+  },
+  {
+    "v": "2.6.0",
+    "d": "2026-11-02",
+    "items": [
+      { "t": "neu", "x": "💙 Melvins Termine erscheinen live in Amelies Terminen und auf der Startseite. Melvin legt pro Termin mit „👀 Bei Amelie zeigen“ fest, was geteilt wird." },
+      { "t": "neu", "x": "🏠 Startseite pro Person einstellbar: beim Öffnen direkt z. B. zu Lernen oder Melvins Finanzen." },
+      { "t": "neu", "x": "🛒 Batzi's Einkauf: eigene Läden hinzufügen und verwalten." },
+      { "t": "besser", "x": "🍝 Batzi's Rezepte: Das Suchfeld steht immer oben auf der Rezeptseite." },
+      { "t": "fix", "x": "Die Datenbank schläft nicht mehr ein: ein täglicher Aufruf hält Supabase wach." }
+    ]
+  },
+  {
+    "v": "2.5.0",
+    "d": "2026-11-01",
+    "items": [
+      { "t": "besser", "x": "Sanfte Animationen beim Seitenwechsel, bei Karten, Listen und beim Drücken von Knöpfen." }
+    ]
+  },
+  {
+    "v": "2.4.0",
+    "d": "2026-10-31",
+    "items": [
+      { "t": "neu", "x": "📅 Termine: mehrere Fächer pro Termin, Suche und Filter (Art, Fach, angepinnt) und 📌 Anpinnen auf der Startseite." },
+      { "t": "neu", "x": "🧳 Batzi's Reisen: Titelbild direkt hochladen statt nur per Link." },
+      { "t": "besser", "x": "Gleiche Seitenleiste in allen Bereichen, mit Knopf zurück zur Startseite." },
+      { "t": "besser", "x": "🗂️ Batzi's Orga: aufgeräumte Karten ohne Überlappung." },
+      { "t": "fix", "x": "Datum eintippen ohne „ungültiger Wert“." },
+      { "t": "fix", "x": "Batzi's Orga: fehlende Felder Person und nächstes Datum ergänzt, Fehlermeldungen stehen über den Dialogen." },
+      { "t": "fix", "x": "Batzi's: Meldungen unten im Bild ziehen sich nicht mehr zu einer riesigen hellen Fläche auf." }
+    ]
+  },
+  {
+    "v": "2.3.0",
+    "d": "2026-10-28",
+    "items": [
+      { "t": "neu", "x": "⏰ Prüfungserinnerung: 3 Monate vor jeder Prüfung ein Hinweis auf der Startseite und eine Push-Benachrichtigung aufs Handy." }
+    ]
+  },
+  {
+    "v": "2.2.0",
+    "d": "2026-10-27",
+    "items": [
+      { "t": "neu", "x": "Eigenes Logo mit A, M und 2024, als App-Icon und für jeden Bereich (beim eigenen Bereich ist der andere Buchstabe ausgeblichen)." },
+      { "t": "besser", "x": "Übersichten aufgeräumt: weniger Elemente, mehr Luft, klare Reihenfolge." },
+      { "t": "besser", "x": "Hellerer, warmer Look für die ganze Seite („Warm & weich“)." }
+    ]
+  },
+  {
+    "v": "2.1.0",
+    "d": "2026-10-27",
+    "items": [
+      { "t": "neu", "x": "👤 Melvins Bereich mit Finanzen, Terminen, ToDos und Verträgen." },
+      { "t": "neu", "x": "📄 Lebenslauf: Zeitstrahl und Download als Word oder PDF." },
+      { "t": "neu", "x": "📤 Termine zwischen Melvin, Amelie und den Batzi's übertragen; verbundene Kopien ändern sich mit." },
+      { "t": "besser", "x": "Einheitliche Optik in allen Bereichen." }
+    ]
+  },
+  {
+    "v": "2.0.0",
+    "d": "2026-10-27",
+    "items": [
+      { "t": "neu", "x": "Ein Login für alles: Startseite mit Amelies Zeug, Melvins Zeug und Die Batzi's." },
+      { "t": "neu", "x": "Umzug der alten Batzi's-Daten auf die neue Seite, auch für Konten, die noch nicht angelegt sind." },
+      { "t": "fix", "x": "Umzug: Mitglieder ohne Beitrittsdatum werden mit übernommen." }
+    ]
+  },
+  {
+    "v": "1.4.0",
+    "d": "2026-10-27",
+    "items": [
+      { "t": "neu", "x": "💶 Kosten & Belege fürs Studium, mit Export für die Steuererklärung." },
+      { "t": "neu", "x": "📆 Kalender-Export und Abo für Apple & Supershift, Vorschläge von der MHH-Webseite." },
+      { "t": "neu", "x": "Termine als Monatskalender, umschaltbar zur Liste." },
+      { "t": "besser", "x": "🧠 Alle Lernseiten unter einem Menüpunkt mit Unterreitern." }
+    ]
+  },
+  {
+    "v": "1.3.0",
+    "d": "2026-10-26",
+    "items": [
+      { "t": "neu", "x": "🎤 Mündliche Prüfung: Fragen vorlesen lassen und Antworten sprechen." },
+      { "t": "neu", "x": "Anki-Stapel importieren und eigene Fragen für Anki exportieren." },
+      { "t": "neu", "x": "Fächer, Themen und viele Fragen auf einmal löschen." }
+    ]
+  },
+  {
+    "v": "1.2.0",
+    "d": "2026-10-26",
+    "items": [
+      { "t": "neu", "x": "🦴 Abbildungen: Strukturen auf Anatomie-Bildern abdecken und grob bis fein lernen." },
+      { "t": "neu", "x": "Gedruckte Beschriftungen auf Abbildungen automatisch erkennen und abdecken." },
+      { "t": "besser", "x": "Themen direkt dort anlegen, wo sie gebraucht werden; der Bild-Upload ist leichter zu finden." }
+    ]
+  },
+  {
+    "v": "1.1.0",
+    "d": "2026-10-26",
+    "items": [
+      { "t": "neu", "x": "🤖 KI-Fragen: aus PDFs, Text oder Links Fragen mit Claude erzeugen, oder kostenlos über claude.ai und wieder einfügen." }
+    ]
+  },
+  {
+    "v": "1.0.0",
+    "d": "2026-10-26",
+    "items": [
+      { "t": "neu", "x": "Die Studi-Webseite ist da: Termine mit Countdown, To-dos, Links und eine Lernplattform mit automatischer Wiederholung." }
+    ]
+  }
+]

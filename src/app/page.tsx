@@ -3,6 +3,7 @@
 import { ExamReminder } from "@/components/ExamReminder";
 import { AREAS, AreaLink, type LogoKind } from "@/components/Shell";
 import { StartPagePicker } from "@/components/StartPagePicker";
+import { WhatsNew } from "@/components/UpdateLog";
 import { DateTile, Empty, Greeting, Panel } from "@/components/ui";
 import { daysUntil, eventCountdown, eventTime, formatEventDate, isCurrent } from "@/lib/dates";
 import { KIND_LABEL } from "@/lib/labels";
@@ -68,6 +69,8 @@ export default function Portal() {
   return (
     <>
       <Greeting name="ihr zwei 👋" />
+
+      <WhatsNew className="-mt-4 mb-6" />
 
       <ExamReminder className="mb-6" />
 

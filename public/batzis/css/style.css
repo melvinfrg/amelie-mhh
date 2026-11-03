@@ -107,6 +107,9 @@ small { font-size: .82em; }
 .nav .ni { font-size: 1.2rem; width: 28px; text-align: center; }
 .nav-count { margin-left: auto; font-style: normal; background: var(--coral); color: var(--on-coral); font-size: .72rem; font-weight: 800; min-width: 22px; height: 22px; display: grid; place-items: center; border-radius: 99px; padding: 0 6px; }
 .nav-dot { margin-left: auto; width: 9px; height: 9px; border-radius: 50%; background: var(--coral); box-shadow: 0 0 0 4px color-mix(in srgb, var(--coral) 25%, transparent); }
+.side-foot { margin: -8px 4px 0; font-size: .75rem; color: var(--muted, #8a8a8a); text-align: center; line-height: 1.6; }
+.side-foot a { color: inherit; font-weight: 700; text-decoration: none; }
+.side-foot a:hover { text-decoration: underline; }
 .me-btn { display: flex; align-items: center; gap: 10px; border: 0; background: var(--card); border-radius: 18px; padding: 10px 12px; box-shadow: var(--shadow); text-align: left; }
 .me-text { display: grid; line-height: 1.2; }
 .me-text small { color: var(--muted); }
