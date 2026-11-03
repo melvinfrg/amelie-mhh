@@ -309,6 +309,19 @@ export interface CvEntry extends Base {
   hidden: boolean;
 }
 
+/** A fault of the website, reported from the update log (🐞 Fehler melden). Both accounts see all reports. */
+export interface BugReport extends Base {
+  user_id?: string;
+  area: string;
+  kind: string;
+  text: string;
+  steps: string | null;
+  reporter: string | null;
+  device: string | null;
+  version: string | null;
+  done: boolean;
+}
+
 export interface Tables {
   events: StudyEvent;
   todos: Todo;
@@ -330,6 +343,7 @@ export interface Tables {
   batzi_events: BatziEvent;
   cv_profile: CvProfile;
   cv_entries: CvEntry;
+  bug_reports: BugReport;
 }
 
 export type TableName = keyof Tables;

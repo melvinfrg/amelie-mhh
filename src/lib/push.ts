@@ -84,3 +84,24 @@ export async function createPushSetup() {
     sql: `insert into cron_secret (hash) values ('${hash}') on conflict (id) do update set hash = excluded.hash;`,
   };
 }
+
+async function currentEndpoint() {
+  const reg = await navigator.serviceWorker.getRegistration("/");
+  return (await reg?.pushManager.getSubscription())?.endpoint ?? null;
+}
+
+/** Whether this device gets the push about a new version (null before supabase/migrations/0015_versionen_fehler.sql). */
+export async function updateNotifyState(): Promise<boolean | null> {
+  const endpoint = await currentEndpoint();
+  if (!endpoint) return null;
+  const { data, error } = await supabase().from("push_subscriptions").select("notify_updates").eq("endpoint", endpoint).maybeSingle();
+  if (error || !data) return null;
+  return data.notify_updates !== false;
+}
+
+export async function setUpdateNotify(on: boolean) {
+  const endpoint = await currentEndpoint();
+  if (!endpoint) throw new Error("Benachrichtigungen sind auf diesem Gerät nicht eingeschaltet.");
+  const { error } = await supabase().from("push_subscriptions").update({ notify_updates: on }).eq("endpoint", endpoint);
+  if (error) throw error;
+}

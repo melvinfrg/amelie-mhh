@@ -7,6 +7,7 @@ import type { Session } from "@supabase/supabase-js";
 import { startRedirect } from "@/lib/startPage";
 import { hasSupabase, supabase } from "@/lib/supabase";
 import { AuthGate } from "./AuthGate";
+import { SiteFooter, UpdateLogHost } from "./UpdateLog";
 
 interface NavItem {
   href: string;
@@ -59,7 +60,7 @@ export const AREAS = [
   },
 ];
 
-const PORTAL: NavItem[] = AREAS.map(({ href, label, icon }) => ({ href, label, icon }));
+const PORTAL: NavItem[] = [...AREAS.map(({ href, label, icon }) => ({ href, label, icon })), { href: "/anleitung", label: "Anleitung", icon: "📖" }];
 
 const MELVIN: NavItem[] = [
   { href: "/melvin", label: "Übersicht", icon: "🏠" },
@@ -73,7 +74,7 @@ const MELVIN: NavItem[] = [
 ];
 
 function area(pathname: string): { id: Area; icon: LogoKind; brand: ReactNode; nav: NavItem[] } {
-  if (pathname === "/")
+  if (pathname === "/" || pathname.startsWith("/anleitung"))
     return { id: "portal", icon: "gemeinsam", brand: <>Amelie <span className="text-brand-600 dark:text-brand-400">&amp;</span> Melvin</>, nav: PORTAL };
   if (pathname.startsWith("/melvin"))
     return { id: "melvin", icon: "melvin", brand: <>Melvins <span className="text-brand-600 dark:text-brand-400">Zeug</span></>, nav: MELVIN };
@@ -173,9 +174,9 @@ export function Shell({ children }: { children: ReactNode }) {
                 <Link href={nav[0].href} className="min-w-0 flex-1 truncate font-display text-lg font-semibold tracking-tight md:text-xl">
                   {brand}
                 </Link>
-                {id !== "portal" && <HomeButton compact />}
+                {pathname !== "/" && <HomeButton compact />}
               </div>
-              {id !== "portal" && (
+              {pathname !== "/" && (
                 <div className="hidden px-3 pb-4 md:block">
                   <HomeButton />
                 </div>
@@ -216,7 +217,9 @@ export function Shell({ children }: { children: ReactNode }) {
                 </p>
               )}
               <div className="mx-auto max-w-5xl">{children}</div>
+              <SiteFooter />
             </main>
+            <UpdateLogHost />
           </div>
           </StartPage>
         )}

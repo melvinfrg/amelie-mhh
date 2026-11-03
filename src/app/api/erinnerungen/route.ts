@@ -1,5 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import webpush from "web-push";
+import CHANGELOG from "@/data/changelog.json";
 import { reminderMessage } from "@/lib/examReminder";
 
 interface DueRow {
@@ -11,6 +12,45 @@ interface DueRow {
   endpoint: string;
   p256dh: string;
   auth: string;
+}
+
+interface Device {
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+}
+
+/**
+ * Once per version: a push to every device that wants it, pointing at the update log (/#neuerungen).
+ * Before supabase/migrations/0015_versionen_fehler.sql is in, the functions are missing and this does nothing.
+ */
+async function notifyNewVersion(client: SupabaseClient, secret: string, gone: string[]) {
+  const newest = CHANGELOG[0];
+  if (!newest) return 0;
+  const { data, error } = await client.rpc("version_push_due", { cron_token: secret, current_version: newest.v });
+  if (error) return 0;
+  const devices = (data ?? []) as Device[];
+  const firsts = newest.items.slice(0, 2).map((i) => i.x.replace(/:.*$/, ""));
+  const body = firsts.join(" · ") + (newest.items.length > 2 ? ` und ${newest.items.length - 2} weitere Neuerungen` : "");
+  let reached = 0;
+  await Promise.all(
+    devices.map(async (d) => {
+      try {
+        await webpush.sendNotification(
+          { endpoint: d.endpoint, keys: { p256dh: d.p256dh, auth: d.auth } },
+          JSON.stringify({ title: `🆕 Neue Version ${newest.v}`, body, tag: `version-${newest.v}`, url: "/#neuerungen" }),
+          { TTL: 60 * 60 * 24, urgency: "low" },
+        );
+        reached++;
+      } catch (e) {
+        const status = (e as { statusCode?: number }).statusCode;
+        if (status === 404 || status === 410) gone.push(d.endpoint);
+      }
+    }),
+  );
+  // Counts as announced even with no devices, so a device switched on later isn't woken for an old version.
+  await client.rpc("mark_version_notified", { cron_token: secret, current_version: newest.v });
+  return reached;
 }
 
 // Vercel Cron calls this once a day (vercel.json) with "Authorization: Bearer <CRON_SECRET>". Every exam that is
@@ -49,11 +89,13 @@ export async function GET(request: Request) {
     }),
   );
 
+  const versionPushes = await notifyNewVersion(client, secret, gone);
+
   // An exam counts as reminded once it reached at least one device; otherwise it is tried again tomorrow.
   if (sent.size) {
     const { error } = await client.rpc("mark_exams_reminded", { cron_token: secret, event_ids: [...sent] });
     if (error) return Response.json({ error: error.message }, { status: 500 });
   }
   if (gone.length) await client.rpc("forget_push_endpoints", { cron_token: secret, endpoints: gone });
-  return Response.json({ reminded: sent.size, devicesRemoved: gone.length });
+  return Response.json({ reminded: sent.size, versionPushes, devicesRemoved: gone.length });
 }
